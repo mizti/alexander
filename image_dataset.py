@@ -6,17 +6,10 @@
 import sys
 import random
 import numpy as np
-from PIL import ImageFont
 from PIL import Image
-from PIL import ImageDraw
 import csv
 import chainer
-from chainer import cuda, Function, gradient_check, report, training, utils, Variable
-from chainer import datasets, iterators, optimizers, serializers
-from chainer import Link, Chain, ChainList
-import chainer.functions as F
-import chainer.links as L
-from chainer.training import extensions
+from chainer import datasets
 
 class ImageDataset(chainer.dataset.DatasetMixin):
     def __init__(self, normalize=True, flatten=True, train=True, max_size=200):
@@ -41,7 +34,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         image = Image.open('data/' + filename)
         #new_w = int(image.size[0] * (self._max_size / max(image.size)))
         #new_h = int(image.size[1] * (self._max_size / max(image.size)))
-        new_w = self._max_size
+        new_w = self._max_size + 1
         new_h = self._max_size
         image = image.resize((new_w, new_h), Image.BICUBIC)
         image_array = np.asarray(image)
@@ -56,13 +49,12 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         filename = self._pairs[i][0]
         image_array = self.get_image(filename)
         if self._normalize:
-            image_array = image_array / np.max(image_array)
+            image_array = image_array / 255
         if self._flatten:
             image_array = image_array.flatten()
         else:
             if image_array.ndim == 2:
                 mage_array = image_array[np.newaxis,:]
-
         image_array = image_array.astype('float32')
         image_array = image_array.transpose(2, 0, 1) # order of rgb / h / w
         label = np.int32(self._pairs[i][1])
