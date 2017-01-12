@@ -7,31 +7,16 @@ from chainer import Link, Chain, ChainList
 import chainer.functions as F
 import chainer.links as L
 from chainer.training import extensions
-from font_image_dataset import *
-
-
-class MLP(Chain):
-    def __init__(self, n_units, n_out):
-        super(MLP, self).__init__(
-            l1 = L.Linear(None, n_units),
-            l2 = L.Linear(None, n_units),
-            l3 = L.Linear(None, n_out)
-        ) 
-    
-    def __call__(self, x):
-        h1 = F.relu(self.l1(x))
-        h2 = F.relu(self.l2(x))
-        y = self.l3(h2)
-        return y
+from image_dataset import *
 
 class CNN(Chain):
     def __init__(self):
         super(CNN, self).__init__(
-            conv1 = L.Convolution2D(in_channels=1, out_channels=16, ksize=3, stride=1, pad=0),
+            conv1 = L.Convolution2D(in_channels=3, out_channels=16, ksize=5, stride=2, pad=0),
             conv2 = L.Convolution2D(in_channels=16, out_channels=32, ksize=3, stride=1, pad=0),
             conv3 = L.Convolution2D(in_channels=32, out_channels=64, ksize=3, stride=1, pad=0),
-            l1 = L.Linear(3136, 512),
-            l2 = L.Linear(512, 12)
+            l1 = L.Linear(7744, 512),
+            l2 = L.Linear(512, 25)
         )
 
     def __call__(self, x):
@@ -56,20 +41,17 @@ class Classifier(Chain):
         report({'loss': loss, 'accuracy': accuracy}, self)
         return loss
 
-parser = argparse.ArgumentParser(description='Chainer example: MNIST')
+parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
 args = parser.parse_args()
 
-#train_data = FontImageDataset(100, train=True, flatten=True)
-#test_data = FontImageDataset(100, train=False, flatten=True)
-train_data = FontImageDataset(10000, train=True, flatten=False)
-test_data = FontImageDataset(10000, train=False, flatten=False)
-train_iter = iterators.SerialIterator(train_data, batch_size=200, shuffle=True)
-test_iter = iterators.SerialIterator(test_data, batch_size=200, repeat=False, shuffle=False)
+train_data = ImageDataset(normalize=True, flatten=False, train=True, max_size=200)
+test_data = ImageDataset(normalize=True, flatten=False, train=False, max_size=200)
 
-#model = L.Classifier(MLP(100, 12))
-#model = L.Classifier(MLP(200, 12))
+train_iter = iterators.SerialIterator(train_data, batch_size=201, shuffle=True)
+test_iter = iterators.SerialIterator(test_data, batch_size=201, repeat=False, shuffle=False)
+
 model = L.Classifier(CNN())
 
 if args.gpu >= 0:
@@ -79,12 +61,10 @@ if args.gpu >= 0:
 optimizer = optimizers.SGD()
 optimizer.setup(model)
 
-#updater = training.StandardUpdater(train_iter, optimizer, device=-1)
 updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
 
 trainer = training.Trainer(updater, (500, 'epoch'), out='result')
 print("start running")
-#trainer.extend(extensions.Evaluator(test_iter, model))
 trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
 trainer.extend(extensions.LogReport())
 trainer.extend(extensions.PrintReport(['epoch', 'main/accuracy', 'validation/main/accuracy']))

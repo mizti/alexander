@@ -4,5 +4,6 @@ font_files/*
 */.DS_Store
 */.DS_Store
 __pycache__/*
-temp
+temp/*
 result/log
+data
