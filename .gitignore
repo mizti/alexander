@@ -1,0 +1,8 @@
+font_files/*
+*.png
+.DS_Store
+*/.DS_Store
+*/.DS_Store
+__pycache__/*
+temp
+result/log
