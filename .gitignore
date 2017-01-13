@@ -5,6 +5,6 @@ font_files/*
 */.DS_Store
 __pycache__/*
 temp/*
-result/log
+result/*
 data
 *.swp

@@ -24,10 +24,13 @@ class CNN(Chain):
 
     def __call__(self, x):
         h = F.relu(self.norm1(self.conv1(x)))
+        #h = F.relu(self.conv1(x))
         h = F.max_pooling_2d(h, 2)
         h = F.relu(self.norm2(self.conv2(h)))
+        #h = F.relu(self.conv2(h))
         h = F.max_pooling_2d(h, 2)
         h = F.relu(self.norm3(self.conv3(h)))
+        #h = F.relu(self.conv3(h))
         h = F.max_pooling_2d(h, 2)
         h = F.relu(self.l1(h))
         y = self.l2(h)
@@ -49,15 +52,14 @@ parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (negative value indicates CPU)')
 args = parser.parse_args()
 
-train_data = ImageDataset(normalize=True, flatten=False, train=True, max_size=200, datasize=28)
-test_data = ImageDataset(normalize=True, flatten=False, train=False, max_size=200, datasize=10)
+train_data = ImageDataset(normalize=True, flatten=False, train=True, max_size=200, datasize=9000)
+test_data = ImageDataset(normalize=True, flatten=False, train=False, max_size=200, datasize=1000)
 #train_iter = iterators.SerialIterator(train_data, batch_size=200, repeat=True, shuffle=True)
 #test_iter = iterators.SerialIterator(test_data, batch_size=200, repeat=True, shuffle=True)
-train_iter = iterators.SerialIterator(train_data, batch_size=2, repeat=True, shuffle=True)
-test_iter = iterators.SerialIterator(test_data, batch_size=2, repeat=True, shuffle=True)
+train_iter = iterators.SerialIterator(train_data, batch_size=200, repeat=True, shuffle=True)
+test_iter = iterators.SerialIterator(test_data, batch_size=200, repeat=False, shuffle=True)
 
-#model = L.Classifier(CNN())
-model = Classifier(CNN())
+model = L.Classifier(CNN())
 
 if args.gpu >= 0:
     chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
