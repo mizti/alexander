@@ -12,7 +12,7 @@ import chainer
 from chainer import datasets
 
 class ImageDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, normalize=True, flatten=True, train=True, max_size=200):
+    def __init__(self, normalize=True, flatten=True, train=True, max_size=200, datasize = 0):
         self._normalize = normalize
         self._flatten = flatten
         self._train = train
@@ -23,8 +23,8 @@ class ImageDataset(chainer.dataset.DatasetMixin):
             for row in tsv:
                 if 'jpg' in row[0]:
                     pairs.append(row)
-
-        im = self.get_image(pairs[4][0])
+        if datasize > 0:
+            pairs = random.sample(pairs, datasize)
         self._pairs = pairs
 
     def __len__(self):
@@ -32,9 +32,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
 
     def get_image(self, filename):
         image = Image.open('data/' + filename)
-        #new_w = int(image.size[0] * (self._max_size / max(image.size)))
-        #new_h = int(image.size[1] * (self._max_size / max(image.size)))
-        new_w = self._max_size + 1
+        new_w = self._max_size
         new_h = self._max_size
         image = image.resize((new_w, new_h), Image.BICUBIC)
         image_array = np.asarray(image)
