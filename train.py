@@ -69,10 +69,10 @@ optimizer.setup(model)
 
 updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
 
-trainer = training.Trainer(updater, (30000, 'iteration'), out='result')
+trainer = training.Trainer(updater, (500, 'epoch'), out='result')
 print("start running")
 trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
-trainer.extend(extensions.LogReport(trigger=(10, 'iteration'), log_name='log.txt'))
+trainer.extend(extensions.LogReport(trigger=(1, 'epoch'), log_name='log.txt'))
 trainer.extend(extensions.PrintReport(['epoch', 'main/accuracy', 'validation/main/accuracy']))
 trainer.extend(extensions.ProgressBar())
 trainer.run()
