@@ -54,8 +54,6 @@ args = parser.parse_args()
 
 train_data = ImageDataset(normalize=True, flatten=False, train=True, max_size=200, datasize=9000)
 test_data = ImageDataset(normalize=True, flatten=False, train=False, max_size=200, datasize=1000)
-#train_iter = iterators.SerialIterator(train_data, batch_size=200, repeat=True, shuffle=True)
-#test_iter = iterators.SerialIterator(test_data, batch_size=200, repeat=True, shuffle=True)
 train_iter = iterators.SerialIterator(train_data, batch_size=200, repeat=True, shuffle=True)
 test_iter = iterators.SerialIterator(test_data, batch_size=200, repeat=False, shuffle=True)
 
@@ -71,10 +69,10 @@ optimizer.setup(model)
 
 updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
 
-trainer = training.Trainer(updater, (500, 'epoch'), out='result')
+trainer = training.Trainer(updater, (30000, 'iteration'), out='result')
 print("start running")
 trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
-trainer.extend(extensions.LogReport())
+trainer.extend(extensions.LogReport(trigger=(10, 'iteration'), log_name='log.txt'))
 trainer.extend(extensions.PrintReport(['epoch', 'main/accuracy', 'validation/main/accuracy']))
 trainer.extend(extensions.ProgressBar())
 trainer.run()
