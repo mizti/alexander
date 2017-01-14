@@ -12,13 +12,14 @@ import chainer
 from chainer import datasets
 
 class ImageDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, normalize=True, flatten=True, train=True, max_size=200, datasize = 0):
+    def __init__(self, normalize=True, flatten=True, train=True, max_size=200, datasize = 0, data_dir='data'):
         self._normalize = normalize
         self._flatten = flatten
         self._train = train
         self._max_size = max_size
+        self._data_dir = data_dir
         pairs = []
-        with open('data/clf_train_master.tsv', newline='') as f:
+        with open(self._data_dir + '/clf_train_master.tsv', newline='') as f:
             tsv = csv.reader(f, delimiter='\t')
             for row in tsv:
                 if 'jpg' in row[0]:
@@ -31,7 +32,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         return len(self._pairs)
 
     def get_image(self, filename):
-        image = Image.open('data/' + filename)
+        image = Image.open(self._data_dir + '/' + filename)
         new_w = self._max_size
         new_h = self._max_size
         image = image.resize((new_w, new_h), Image.BICUBIC)
