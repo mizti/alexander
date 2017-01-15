@@ -13,15 +13,14 @@ from predict_dataset import *
 class CNN(Chain):
     def __init__(self):
         super(CNN, self).__init__(
-            conv1 = L.Convolution2D(in_channels=3, out_channels=16, ksize=3, stride=1, pad=0),
+            conv1 = L.Convolution2D(in_channels=3, out_channels=16, ksize=5, stride=2, pad=0),
             norm1 = L.BatchNormalization(16),
             conv2 = L.Convolution2D(in_channels=16, out_channels=32, ksize=3, stride=1, pad=0),
             norm2 = L.BatchNormalization(32),
             conv3 = L.Convolution2D(in_channels=32, out_channels=64, ksize=3, stride=1, pad=0),
             norm3 = L.BatchNormalization(64),
-            l1 = L.Linear(82944, 14512),
-            l2 = L.Linear(14512, 1800),
-            l3 = L.Linear(1800, 25)
+            l1 = L.Linear(18496, 1200),
+            l2 = L.Linear(1200, 25)
         )
 
     def __call__(self, x):
@@ -32,8 +31,7 @@ class CNN(Chain):
         h = F.relu(self.norm3(self.conv3(h)))
         h = F.max_pooling_2d(h, 2)
         h = F.relu(self.l1(h))
-        h = F.relu(self.l2(h))
-        y = self.l3(h)
+        y = self.l2(h)
         return y
 
 #class Classifier(Chain):
