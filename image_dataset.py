@@ -11,8 +11,10 @@ import csv
 import chainer
 from chainer import datasets
 
+
+# dataselect: can be designated with int or list.
 class ImageDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, normalize=True, flatten=True, train=True, max_size=200, datasize = 0, data_dir='data'):
+    def __init__(self, normalize=True, flatten=True, train=True, max_size=200, dataselect = 0, data_dir='data'):
         self._normalize = normalize
         self._flatten = flatten
         self._train = train
@@ -21,11 +23,16 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         pairs = []
         with open(self._data_dir + '/clf_train_master.tsv', newline='') as f:
             tsv = csv.reader(f, delimiter='\t')
-            for row in tsv:
+            for index, row in enumerate(tsv):
                 if 'jpg' in row[0]:
-                    pairs.append(row)
-        if datasize > 0:
-            pairs = random.sample(pairs, datasize)
+                    if (dataselect.__class__ == list) :
+                        if (index-1 in dataselect):
+                            pairs.append(row)
+                    else:
+                        pairs.append(row)
+
+        if (dataselect.__class__ == int) and (dataselect > 0):
+            pairs = random.sample(pairs, dataselect)
         self._pairs = pairs
 
     def __len__(self):
