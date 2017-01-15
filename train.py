@@ -86,7 +86,7 @@ if __name__ == '__main__':
     if args.model_snapshot_interval > 0:
         #trainer.extend(extensions.snapshot_object(model, 'model_epoch_{.updater.epoch}.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
         trainer.extend(extensions.snapshot_object(model, 'model_epoch.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
-        trainer.extend(extensions.snapshot_object(predictor, 'model_epoch.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
+        trainer.extend(extensions.snapshot_object(predictor, 'cnn_epoch.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
     
     if args.trainer_snapshot_interval > 0:
         #trainer.extend(extensions.snapshot(filename = 'trainer_epoch_{.updater.epoch}.npz'), trigger=(args.trainer_snapshot_interval, 'epoch'))
