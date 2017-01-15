@@ -13,6 +13,7 @@ from chainer import datasets
 
 
 # dataselect: can be designated with int or list.
+# mode: 
 class ImageDataset(chainer.dataset.DatasetMixin):
     def __init__(self, normalize=True, flatten=True, train=True, max_size=200, dataselect = 0, data_dir='data'):
         self._normalize = normalize

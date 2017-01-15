@@ -10,3 +10,4 @@ data
 *.swp
 nohup.out
 *.npz
+draw_graph.py
