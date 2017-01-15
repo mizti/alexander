@@ -51,12 +51,10 @@ parser.add_argument('--gpu', '-g', type=int, default=-1,
 parser.add_argument('--epoch', '-e', default='200', help='Numbers of learning epoch')
 parser.add_argument('--data_dir', '-i', default='data', help='Directory of image files.')
 parser.add_argument('--out', '-o', default='result', help='Directory to output the result')
-
 parser.add_argument('--model_snapshot_interval', '-m', type=int, default=0,
                             help='Interval of model snapshot')
 parser.add_argument('--trainer_snapshot_interval', '-t', type=int, default=0,
                             help='Interval of trainer snapshot')
-
 parser.add_argument('--resume', '-r', default='', help='Resume the training from snapshot')
 args = parser.parse_args()
 
@@ -84,12 +82,17 @@ trainer.extend(extensions.PrintReport(['epoch', 'main/accuracy', 'validation/mai
 trainer.extend(extensions.ProgressBar())
 
 if args.model_snapshot_interval > 0:
-    trainer.extend(extensions.snapshot_object(model, 'model_epoch_{.updater.epoch}.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
+    #trainer.extend(extensions.snapshot_object(model, 'model_epoch_{.updater.epoch}.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
+    trainer.extend(extensions.snapshot_object(model, 'model_epoch.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
 
 if args.trainer_snapshot_interval > 0:
-    print("hoge")
-    trainer.extend(extensions.snapshot(filename = 'trainer_epoch_{.updater.epoch}.npz'), trigger=(args.trainer_snapshot_interval, 'epoch'))
+    #trainer.extend(extensions.snapshot(filename = 'trainer_epoch_{.updater.epoch}.npz'), trigger=(args.trainer_snapshot_interval, 'epoch'))
+    trainer.extend(extensions.snapshot(filename = 'trainer_epoch.npz'), trigger=(args.trainer_snapshot_interval, 'epoch'))
 
+if args.resume:
+    # Resume from a snapshot
+    print("resume from " + args.resume)
+    chainer.serializers.load_npz(args.resume, trainer)
 
 print("start running")
 trainer.run()
