@@ -59,8 +59,8 @@ if __name__ == '__main__':
     parser.add_argument('--resume', '-r', default='', help='Resume the training from snapshot')
     args = parser.parse_args()
     
-    train_data = ImageDataset(normalize=True, flatten=False, train=True, max_size=200, dataselect=9000, data_dir=args.data_dir)
-    test_data = ImageDataset(normalize=True, flatten=False, train=False, max_size=200, dataselect=1000, data_dir=args.data_dir)
+    train_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=9000, data_dir=args.data_dir)
+    test_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=1000, data_dir=args.data_dir)
     
     train_iter = iterators.SerialIterator(train_data, batch_size=200, repeat=True, shuffle=True)
     test_iter = iterators.SerialIterator(test_data, batch_size=200, repeat=False, shuffle=True)

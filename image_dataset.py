@@ -10,30 +10,37 @@ from PIL import Image
 import csv
 import chainer
 from chainer import datasets
-
+import glob
 
 # dataselect: can be designated with int or list.
-# mode: 
+# mode: 'train' / 'trial'
 class ImageDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, normalize=True, flatten=True, train=True, max_size=200, dataselect = 0, data_dir='data'):
+    def __init__(self, normalize=True, flatten=True, max_size=200, dataselect = 0, data_dir='data', mode='train'):
         self._normalize = normalize
         self._flatten = flatten
-        self._train = train
         self._max_size = max_size
         self._data_dir = data_dir
+        self._mode = mode
         pairs = []
-        with open(self._data_dir + '/clf_train_master.tsv', newline='') as f:
-            tsv = csv.reader(f, delimiter='\t')
-            for index, row in enumerate(tsv):
-                if 'jpg' in row[0]:
-                    if (dataselect.__class__ == list) :
-                        if (index-1 in dataselect):
+        if self._mode == 'train':
+            with open(self._data_dir + '/clf_train_master.tsv', newline='') as f:
+                tsv = csv.reader(f, delimiter='\t')
+                for index, row in enumerate(tsv):
+                    if 'jpg' in row[0]:
+                        if (dataselect.__class__ == list) :
+                            if (index-1 in dataselect):
+                                pairs.append(row)
+                        else:
                             pairs.append(row)
-                    else:
-                        pairs.append(row)
-
+        else:
+            trial_files = [r.split('/')[-1] for r in glob.glob('data/test*')]
+            for item in trial_files:
+                pairs.append([item, 0]) # filename with dummy label
+    
         if (dataselect.__class__ == int) and (dataselect > 0):
             pairs = random.sample(pairs, dataselect)
+
+        print(pairs)
         self._pairs = pairs
 
     def __len__(self):
