@@ -8,3 +8,4 @@ temp/*
 result/*
 data
 *.swp
+nohup.out
