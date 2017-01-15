@@ -9,8 +9,14 @@ import numpy as np
 from PIL import Image
 import csv
 import chainer
+import chainer.links as L
 from chainer import datasets
+from train import *
 
-def predict_dataset(model, dataset):
-    return "this!"
-    
+def predict(model, dataset):
+    return 'this!'
+
+if __name__ == '__main__':
+    model = L.Classifier(CNN())
+    chainer.serializers.load_npz('model_epoch379.npz', model)
+    print(model)

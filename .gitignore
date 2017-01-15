@@ -9,3 +9,4 @@ result/*
 data
 *.swp
 nohup.out
+*.npz
