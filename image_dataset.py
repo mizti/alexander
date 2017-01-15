@@ -11,6 +11,7 @@ import csv
 import chainer
 from chainer import datasets
 import glob
+import re
 
 # dataselect: can be designated with int or list.
 # mode: 'train' / 'trial'
@@ -29,15 +30,26 @@ class ImageDataset(chainer.dataset.DatasetMixin):
                 for index, row in enumerate(tsv):
                     if 'jpg' in row[0]:
                         pairs.append(row)
-        else:
-            for item in [r.split('/')[-1] for r in glob.glob(self._data_dir + '/test*')]:
+        elif self._mode == 'trial':
+            filelist = glob.glob('data/test*.jpg')
+            files = [r.split('/')[-1] for r in glob.glob('data/test*.jpg')]
+            sorted_files = sorted(files, key=lambda x: self.getnum_from_string(x))
+            for item in sorted_files:
                 pairs.append([item, 0]) # filename with dummy label
+
+        else:
+            print("pass 'train' or 'trial'")  
     
         if (dataselect.__class__ != int) or (dataselect >0):
             pairs = self.select_data(pairs)
 
         self._pairs = pairs
 
+    def getnum_from_string(self, filename):
+        r = re.compile("([0-9]+)")
+        m = r.search(filename)
+        return int(m.group(1))
+    
     def select_data(self, pairs):
         print(self._dataselect)
         if self._dataselect.__class__ == int:

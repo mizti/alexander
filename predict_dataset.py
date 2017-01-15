@@ -24,11 +24,10 @@ def predict(model, dataset):
 def print_submit(ans):
     for index, row in enumerate(ans):
         print("{0},{1}".format(index,ans[index]))
-    print("")
 
 if __name__ == '__main__':
     model = CNN()
-    chainer.serializers.load_npz('cnn_epoch_20.npz', model)
-    train_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=-1, mode='trial')
-    ans = predict(model, train_data)
+    chainer.serializers.load_npz('cnn_epoch_80.npz', model)
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=-1, mode='trial')
+    ans = predict(model, trial_data)
     print_submit(ans)
