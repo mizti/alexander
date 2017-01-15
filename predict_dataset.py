@@ -28,6 +28,6 @@ def print_submit(ans):
 if __name__ == '__main__':
     model = CNN()
     chainer.serializers.load_npz('cnn_epoch_150.npz', model)
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=-1, mode='trial')
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=300, dataselect=-1, mode='trial')
     ans = predict(model, trial_data)
     print_submit(ans)

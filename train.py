@@ -13,14 +13,14 @@ from predict_dataset import *
 class CNN(Chain):
     def __init__(self):
         super(CNN, self).__init__(
-            conv1 = L.Convolution2D(in_channels=3, out_channels=16, ksize=5, stride=2, pad=0),
+            conv1 = L.Convolution2D(in_channels=3, out_channels=16, ksize=3, stride=1, pad=0),
             norm1 = L.BatchNormalization(16),
             conv2 = L.Convolution2D(in_channels=16, out_channels=32, ksize=3, stride=1, pad=0),
             norm2 = L.BatchNormalization(32),
             conv3 = L.Convolution2D(in_channels=32, out_channels=64, ksize=3, stride=1, pad=0),
             norm3 = L.BatchNormalization(64),
-            l1 = L.Linear(7744, 512),
-            l2 = L.Linear(512, 25)
+            l1 = L.Linear(18496, 1512),
+            l2 = L.Linear(1512, 25)
         )
 
     def __call__(self, x):
@@ -59,11 +59,11 @@ if __name__ == '__main__':
     parser.add_argument('--resume', '-r', default='', help='Resume the training from snapshot')
     args = parser.parse_args()
     
-    train_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=9000, data_dir=args.data_dir)
-    test_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=1000, data_dir=args.data_dir)
+    train_data = ImageDataset(normalize=True, flatten=False, max_size=300, dataselect=-1, data_dir=args.data_dir)
+    test_data = ImageDataset(normalize=True, flatten=False, max_size=300, dataselect=-1, data_dir=args.data_dir)
     
-    train_iter = iterators.SerialIterator(train_data, batch_size=200, repeat=True, shuffle=True)
-    test_iter = iterators.SerialIterator(test_data, batch_size=200, repeat=False, shuffle=True)
+    train_iter = iterators.SerialIterator(train_data, batch_size=50, repeat=True, shuffle=True)
+    test_iter = iterators.SerialIterator(test_data, batch_size=50, repeat=False, shuffle=True)
 
     predictor = CNN()    
     model = L.Classifier(predictor)
