@@ -20,6 +20,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         self._flatten = flatten
         self._max_size = max_size
         self._data_dir = data_dir
+        self._dataselect = dataselect
         self._mode = mode
         pairs = []
         if self._mode == 'train':
@@ -27,21 +28,27 @@ class ImageDataset(chainer.dataset.DatasetMixin):
                 tsv = csv.reader(f, delimiter='\t')
                 for index, row in enumerate(tsv):
                     if 'jpg' in row[0]:
-                        if (dataselect.__class__ == list) :
-                            if (index-1 in dataselect):
-                                pairs.append(row)
-                        else:
-                            pairs.append(row)
+                        pairs.append(row)
         else:
-            trial_files = [r.split('/')[-1] for r in glob.glob('data/test*')]
-            for item in trial_files:
+            for item in [r.split('/')[-1] for r in glob.glob(self._data_dir + '/test*')]:
                 pairs.append([item, 0]) # filename with dummy label
     
-        if (dataselect.__class__ == int) and (dataselect > 0):
-            pairs = random.sample(pairs, dataselect)
+        if (dataselect.__class__ != int) or (dataselect >0):
+            pairs = self.select_data(pairs)
 
-        print(pairs)
         self._pairs = pairs
+
+    def select_data(self, pairs):
+        print(self._dataselect)
+        if self._dataselect.__class__ == int:
+            pairs = random.sample(pairs, self._dataselect)
+        elif self._dataselect.__class__ == list:
+            new_pairs = []
+            for index, item in enumerate(pairs):
+                if (index-1 in self._dataselect): 
+                    new_pairs.append(item)
+            pairs = new_pairs
+        return pairs
 
     def __len__(self):
         return len(self._pairs)

@@ -1,2 +1,0 @@
-*/1 * * * * date >> trace.log 2>&1
-*/1 * * * * ps aux | grep python >> trace.log 2>&1

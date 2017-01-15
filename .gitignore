@@ -11,3 +11,5 @@ data
 nohup.out
 *.npz
 draw_graph.py
+output.csv
+

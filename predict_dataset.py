@@ -29,7 +29,6 @@ def print_submit(ans):
 if __name__ == '__main__':
     model = CNN()
     chainer.serializers.load_npz('cnn_epoch_20.npz', model)
-    train_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=list(range(0,20)), mode='trial')
-    exit()
+    train_data = ImageDataset(normalize=True, flatten=False, max_size=200, dataselect=-1, mode='trial')
     ans = predict(model, train_data)
     print_submit(ans)
