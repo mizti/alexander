@@ -76,7 +76,7 @@ if __name__ == '__main__':
     optimizer.setup(model)
     
     updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
-    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out)
+    trainer = training.Trainer(updater, (int(args.epoch), 'epoch'), out=args.out)
     
     trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
     trainer.extend(extensions.LogReport(trigger=(1, 'epoch'), log_name='log.txt'))
