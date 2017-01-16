@@ -9,46 +9,14 @@ import chainer.links as L
 from chainer.training import extensions
 from image_dataset import *
 from predict_dataset import *
+from net.nets import *
 
-class CNN(Chain):
-    def __init__(self):
-        super(CNN, self).__init__(
-            conv1 = L.Convolution2D(in_channels=3, out_channels=16, ksize=5, stride=2, pad=0),
-            norm1 = L.BatchNormalization(16),
-            conv2 = L.Convolution2D(in_channels=16, out_channels=32, ksize=3, stride=1, pad=0),
-            norm2 = L.BatchNormalization(32),
-            conv3 = L.Convolution2D(in_channels=32, out_channels=64, ksize=3, stride=1, pad=0),
-            norm3 = L.BatchNormalization(64),
-            l1 = L.Linear(18496, 1200),
-            l2 = L.Linear(1200, 25)
-        )
-
-    def __call__(self, x):
-        h = F.relu(self.norm1(self.conv1(x)))
-        h = F.max_pooling_2d(h, 2)
-        h = F.relu(self.norm2(self.conv2(h)))
-        h = F.max_pooling_2d(h, 2)
-        h = F.relu(self.norm3(self.conv3(h)))
-        h = F.max_pooling_2d(h, 2)
-        h = F.relu(self.l1(h))
-        y = self.l2(h)
-        return y
-
-#class Classifier(Chain):
-#    def __init__(self, predictor):
-#        super(Classifier, self).__init__(predictor=predictor)
-#
-#    def __call__(self, x, t):
-#        y = self.predictor(x)
-#        loss = F.softmax_cross_entropy(y, t)
-#        accuracy = F.accuracy(y, t)
-#        report({'loss': loss, 'accuracy': accuracy}, self)
-#        return loss
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                             help='GPU ID (negative value indicates CPU)')
     
+    parser.add_argument('--net', '-n', default='CNN', help='Choose which network to learn')
     parser.add_argument('--epoch', '-e', default=200, help='Numbers of learning epoch')
     parser.add_argument('--data_dir', '-i', default='data', help='Directory of image files.')
     parser.add_argument('--out', '-o', default='result', help='Directory to output the result')
@@ -59,14 +27,22 @@ if __name__ == '__main__':
     parser.add_argument('--resume', '-r', default='', help='Resume the training from snapshot')
     args = parser.parse_args()
     
-    train_data = ImageDataset(normalize=True, flatten=False, max_size=300, dataselect=-1, data_dir=args.data_dir)
-    test_data = ImageDataset(normalize=True, flatten=False, max_size=300, dataselect=-1, data_dir=args.data_dir)
+    train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, data_dir=args.data_dir)
+    test_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, data_dir=args.data_dir)
     
     train_iter = iterators.SerialIterator(train_data, batch_size=50, repeat=True, shuffle=True)
     test_iter = iterators.SerialIterator(test_data, batch_size=50, repeat=False, shuffle=True)
 
-    predictor = CNN()    
-    model = L.Classifier(predictor)
+    predictor = ''
+    model = ''
+    if args.net == 'CNN':
+        predictor = CNN()
+        model = L.Classifier(predictor)
+    elif args.net == 'GoogLeNet':
+        model = GoogLeNetBN()
+    else:
+        print('Such network is not defined')
+        exit()
     
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
@@ -84,9 +60,11 @@ if __name__ == '__main__':
     trainer.extend(extensions.ProgressBar())
     
     if args.model_snapshot_interval > 0:
-        trainer.extend(extensions.snapshot_object(model, 'model_epoch_{.updater.epoch}.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
-        trainer.extend(extensions.snapshot_object(predictor, 'cnn_epoch_{.updater.epoch}.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
-    
+        if args.net == 'CNN':
+            trainer.extend(extensions.snapshot_object(predictor, args.net + '_epoch_{.updater.epoch}.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
+        else:
+            trainer.extend(extensions.snapshot_object(model, args.net + '_epoch_{.updater.epoch}.npz'), trigger=(args.model_snapshot_interval, 'epoch'))
+             
     if args.trainer_snapshot_interval > 0:
         trainer.extend(extensions.snapshot(filename = 'trainer_epoch_{.updater.epoch}.npz'), trigger=(args.trainer_snapshot_interval, 'epoch'))
     
