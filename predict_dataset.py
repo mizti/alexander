@@ -29,8 +29,8 @@ def print_submit(ans):
 if __name__ == '__main__':
     #model = CNN()
     model = GoogLeNetBN()
-    chainer.serializers.load_npz('GoogLeNet_epoch_60.npz', model)
+    chainer.serializers.load_npz('GoogLeNet_epoch_90.npz', model)
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
     ans = predict(model, trial_data)
     print_submit(ans)
