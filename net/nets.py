@@ -90,6 +90,28 @@ class GoogLeNetBN(chainer.Chain):
         self.inc5a.train = value
         self.inc5b.train = value
 
+    def predict(self, x):
+        test = True
+
+        h = F.max_pooling_2d(
+            F.relu(self.norm1(self.conv1(x), test=test)),  3, stride=2, pad=1)
+        h = F.max_pooling_2d(
+            F.relu(self.norm2(self.conv2(h), test=test)), 3, stride=2, pad=1)
+        h = self.inc3a(h)
+        h = self.inc3b(h)
+        h = self.inc3c(h)
+        h = self.inc4a(h)
+
+        h = self.inc4b(h)
+        h = self.inc4c(h)
+        h = self.inc4d(h)
+
+        h = self.inc4e(h)
+        h = self.inc5a(h)
+        h = F.average_pooling_2d(self.inc5b(h), 7)
+        h = self.out(h)
+		return h
+
     def __call__(self, x, t):
         test = not self.train
 
