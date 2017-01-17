@@ -110,7 +110,7 @@ class GoogLeNetBN(chainer.Chain):
         h = self.inc5a(h)
         h = F.average_pooling_2d(self.inc5b(h), 7)
         h = self.out(h)
-		return h
+        return h
 
     def __call__(self, x, t):
         test = not self.train
