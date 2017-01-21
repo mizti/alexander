@@ -7,11 +7,11 @@ import sys
 import random
 import numpy as np
 from PIL import Image
+from PIL import ImageFilter
 import csv
 import chainer
 from chainer import datasets
 import glob
-import re
 
 # dataselect: can be designated with int or list.
 # mode: 'train' / 'trial'
@@ -51,7 +51,6 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         return int(m.group(1))
     
     def select_data(self, pairs):
-        print(self._dataselect)
         if self._dataselect.__class__ == int:
             pairs = random.sample(pairs, self._dataselect)
         elif self._dataselect.__class__ == list:
@@ -67,9 +66,63 @@ class ImageDataset(chainer.dataset.DatasetMixin):
 
     def get_image(self, filename):
         image = Image.open(self._data_dir + '/' + filename)
+
+        # make valiation of image
+        i = random.randint(1,100000)
+        if i%2 == 0:
+            #print('do left-right mirror')
+            image = image.transpose(Image.FLIP_LEFT_RIGHT)
+        if i%100 != 0:
+            #print('extract upto 70% region')
+            w_mag = random.randint(70, 100)
+            h_mag = random.randint(70, 100)
+            left_percentage = random.random()
+            top_percentage = random.random()
+
+            width = image.size[0]
+            height = image.size[1]
+
+            new_width  = int(width * w_mag / 100)
+            new_height = int(height * h_mag / 100)
+
+            image = image.crop(
+                (
+                    int((width - new_width) * left_percentage),
+                    int((height - new_height) * top_percentage),
+                    int((width - new_width) * left_percentage + new_width),
+                    int((height - new_height) * top_percentage + new_height)
+                )
+            )
+
+        # TODO: paddign to be square
+        #longer_side = max(img.size)
+        #horizontal_padding = (longer_side - img.size[0]) / 2
+        #vertical_padding = (longer_side - img.size[1]) / 2
+        #img5 = img.crop(
+        #    (
+        #            -horizontal_padding,
+        #                    -vertical_padding,
+        #                            img.size[0] + horizontal_padding,
+        #                                    img.size[1] + vertical_padding
+        #                                        )
+        #    )
+
+        # resize
         new_w = self._max_size
         new_h = self._max_size
         image = image.resize((new_w, new_h), Image.BICUBIC)
+
+        if i%20 == 0:
+            #print('blur')
+            image = image.filter(ImageFilter.BLUR)
+        if i%5 == 0:
+            #print('add inpulse noise')
+            image = image.filter(ImageFilter.BLUR)
+        #if i%10 == 0:
+        #    print('add gausian noise')
+        
+        #image.save('sampledata.png')
+
         image_array = np.asarray(image)
         return image_array
         
