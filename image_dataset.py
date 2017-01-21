@@ -12,6 +12,7 @@ import csv
 import chainer
 from chainer import datasets
 import glob
+import re
 
 # dataselect: can be designated with int or list.
 # mode: 'train' / 'trial'
