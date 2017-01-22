@@ -70,10 +70,10 @@ class ImageDataset(chainer.dataset.DatasetMixin):
 
         # make valiation of image
         i = random.randint(1,100000)
-        if i%2 == 0:
+        if (i%2 == 0) and (self._mode == 'train'):
             #print('do left-right mirror')
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
-        if i%100 != 0:
+        if (i%100 != 0):
             #print('extract upto 70% region')
             w_mag = random.randint(70, 100)
             h_mag = random.randint(70, 100)
@@ -113,13 +113,13 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         new_h = self._max_size
         image = image.resize((new_w, new_h), Image.BICUBIC)
 
-        if i%20 == 0:
+        if (i%20 == 0) and (self._mode == 'train'):
             #print('blur')
             image = image.filter(ImageFilter.BLUR)
-        if i%5 == 0:
-            #print('add inpulse noise')
-            image = image.filter(ImageFilter.BLUR)
-        #if i%10 == 0:
+        #if i%5 == 0 and self._mode == 'train':
+        #    #print('add inpulse noise')
+        #    image = image.filter(ImageFilter.BLUR)
+        #if i%10 == 0 and self._mode == 'train':
         #    print('add gausian noise')
         
         #image.save('sampledata.png')
@@ -131,6 +131,9 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         image_array = image_array.astype('float32')
         label = np.int32(label)
         return image_array, label
+
+    def get_filename(self, i):
+        return self._pairs[i][0]
 
     def get_example(self, i):
         filename = self._pairs[i][0]

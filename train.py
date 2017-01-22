@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                             help='GPU ID (negative value indicates CPU)')
     
-    parser.add_argument('--net', '-n', default='CNN', help='Choose which network to learn')
+    parser.add_argument('--net', '-n', default='CNN', help='Choose network to train')
     parser.add_argument('--epoch', '-e', default=200, help='Numbers of learning epoch')
     parser.add_argument('--data_dir', '-i', default='data', help='Directory of image files.')
     parser.add_argument('--out', '-o', default='result', help='Directory to output the result')
