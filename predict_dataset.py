@@ -25,14 +25,15 @@ def predict(model, dataset, iteration=1):
                 current_max = np.max(result)
                 current_ans = np.argmax(result)
 
-        print(str(index) + ' ' + str(current_ans))
+        print(str(index) + ',' + str(current_ans))
         ans.append(current_ans)
     return ans
 
 def output_submit_file(ans, output_filename):
     f = open(output_filename, 'w')
     for index, row in enumerate(ans):
-        f.write("{0},{1}".format(index,ans[index]))
+        f.write("{0},{1}\n".format(str(index),str(ans[index])))
+    f.write('\n')
     f.close()
 
 if __name__ == '__main__':
