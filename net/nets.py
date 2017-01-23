@@ -56,19 +56,19 @@ class GoogLeNetBN(chainer.Chain):
             inc4e=L.InceptionBN(576, 0, 128, 192, 192, 256, 'max', stride=2),
             inc5a=L.InceptionBN(1024, 352, 192, 320, 160, 224, 'avg', 128),
             inc5b=L.InceptionBN(1024, 352, 192, 320, 192, 224, 'max', 128),
-            out=L.Linear(1024, 34),
+            out=L.Linear(1024, 25),
 
             conva=L.Convolution2D(576, 128, 1, nobias=True),
             norma=L.BatchNormalization(128),
             lina=L.Linear(2048, 1024, nobias=True),
             norma2=L.BatchNormalization(1024),
-            outa=L.Linear(1024, 34),
+            outa=L.Linear(1024, 25),
 
             convb=L.Convolution2D(576, 128, 1, nobias=True),
             normb=L.BatchNormalization(128),
             linb=L.Linear(2048, 1024, nobias=True),
             normb2=L.BatchNormalization(1024),
-            outb=L.Linear(1024, 34),
+            outb=L.Linear(1024, 25),
         )
         self._train = True
 
@@ -110,6 +110,7 @@ class GoogLeNetBN(chainer.Chain):
         h = self.inc5a(h)
         h = F.average_pooling_2d(self.inc5b(h), 7)
         h = self.out(h)
+        h = F.softmax(h)
         return h
 
     def __call__(self, x, t):
