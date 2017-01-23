@@ -33,7 +33,6 @@ def output_submit_file(ans, output_filename):
     f = open(output_filename, 'w')
     for index, row in enumerate(ans):
         f.write("{0},{1}\n".format(str(index),str(ans[index])))
-    f.write('\n')
     f.close()
 
 if __name__ == '__main__':
@@ -57,6 +56,6 @@ if __name__ == '__main__':
         print('please select CNN or GoogLeNet')
     chainer.serializers.load_npz(args.model_snapshot, model)
     trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
-    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=10, mode='train')
     ans = predict(model, trial_data, args.iteration)
     output_submit_file(ans, output_filename)
