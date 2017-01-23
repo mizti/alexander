@@ -17,9 +17,10 @@ import re
 # dataselect: can be designated with int or list.
 # mode: 'train' / 'trial'
 class ImageDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, normalize=True, flatten=True, max_size=200, dataselect = 0, data_dir='data', mode='train'):
+    def __init__(self, normalize=True, flatten=True, crop=True, max_size=200, dataselect = 0, data_dir='data', mode='train'):
         self._normalize = normalize
         self._flatten = flatten
+        self._crop = crop
         self._max_size = max_size
         self._data_dir = data_dir
         self._dataselect = dataselect
@@ -57,7 +58,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         elif self._dataselect.__class__ == list:
             new_pairs = []
             for index, item in enumerate(pairs):
-                if (index-1 in self._dataselect): 
+                if (index in self._dataselect): 
                     new_pairs.append(item)
             pairs = new_pairs
         return pairs
@@ -73,7 +74,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         if (i%2 == 0) and (self._mode == 'train'):
             #print('do left-right mirror')
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
-        if (i%100 != 0):
+        if (i%100 != 0) and (self._crop):
             #print('extract upto 70% region')
             w_mag = random.randint(70, 100)
             h_mag = random.randint(70, 100)

@@ -7,6 +7,7 @@ from chainer import Link, Chain, ChainList
 import chainer.functions as F
 import chainer.links as L
 from chainer.training import extensions
+from datetime import datetime
 
 class CNN(Chain):
     def __init__(self):
@@ -156,5 +157,6 @@ class GoogLeNetBN(chainer.Chain):
             'loss2': loss2,
             'loss3': loss3,
             'accuracy': accuracy,
+            'timestamp': int(datetime.now().strftime('%Y%m%d%H%M%S'))
         }, self)
         return loss
