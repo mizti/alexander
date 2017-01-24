@@ -24,7 +24,14 @@ def predict(model, dataset, iteration=1):
             if np.max(result) > current_max:
                 current_max = np.max(result)
                 current_ans = np.argmax(result)
-                
+        
+        print('----------------------')
+        print(result)
+        print('======================')
+        print(item[0].__class__)
+        print(item[0].shape)
+        print(item[1].__class__)
+        model(np.array([item[0]]), item[1])
         #print(dataset.get_filename(index) + '\t' + str(current_ans) + '\r')
         #print(str(index) + ',' + str(current_ans))
         ans.append(current_ans)
@@ -56,7 +63,8 @@ if __name__ == '__main__':
     else:
         print('please select CNN or GoogLeNet')
     chainer.serializers.load_npz(args.model_snapshot, model)
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     ans = predict(model, trial_data, args.iteration)
     output_submit_file(ans, output_filename)

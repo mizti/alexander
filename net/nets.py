@@ -146,6 +146,7 @@ class GoogLeNetBN(chainer.Chain):
         h = self.inc5a(h)
         h = F.average_pooling_2d(self.inc5b(h), 7)
         h = self.out(h)
+        print(F.softmax(h))
         loss3 = F.softmax_cross_entropy(h, t)
 
         loss = 0.3 * (loss1 + loss2) + loss3
