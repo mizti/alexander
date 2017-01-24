@@ -19,20 +19,14 @@ def predict(model, dataset, iteration=1):
     for index, item in enumerate(dataset):
         current_max = -100000.0
         current_ans = None
+        input_array = np.array([item[0]])
         for i in range(0, iteration):
-            result = model.predict(np.array([dataset.get_example(index)[0]])).data
+            result = model.predict(input_array)
             if np.max(result) > current_max:
                 current_max = np.max(result)
                 current_ans = np.argmax(result)
-        
-        print('----------------------')
-        print(result)
-        print('======================')
-        print(item[0].__class__)
-        print(item[0].shape)
-        print(item[1].__class__)
-        model(np.array([item[0]]), item[1])
-        #print(dataset.get_filename(index) + '\t' + str(current_ans) + '\r')
+
+        print(dataset.get_filename(index) + '\t' + str(current_ans) + '\r')
         #print(str(index) + ',' + str(current_ans))
         ans.append(current_ans)
     return ans
