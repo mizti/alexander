@@ -10,32 +10,38 @@ from PIL import Image
 import csv
 import chainer
 import chainer.links as L
-from chainer import datasets
+from chainer import datasets, iterators
 from train import *
 from image_dataset import *
+import math
 
-def predict(model, dataset, iteration=1):
+def predict(model, dataset, iteration=1, minibatch_size=50):
     ans = []
-    for index, item in enumerate(dataset):
-        current_max = -100000.0
-        current_ans = None
-        input_array = np.array([item[0]])
-        for i in range(0, iteration):
-            result = model.predict(input_array)
-            if np.max(result) > current_max:
-                current_max = np.max(result)
-                current_ans = np.argmax(result)
-
-        print(dataset.get_filename(index) + '\t' + str(current_ans) + '\r')
-        #print(str(index) + ',' + str(current_ans))
-        ans.append(current_ans)
+    iterator = iterators.SerialIterator(dataset, batch_size=minibatch_size, repeat=True, shuffle=False)
+    iter_num = math.ceil(len(dataset) / minibatch_size)
+    for _ in range(iter_num):
+        print(_)
+        part_dataset = iterator.next()
+        xs = []
+        for index, item in enumerate(part_dataset):
+            xs.append(item[0])
+        xs = np.array(xs) 
+        result = model.predict(xs)
+        for index, item in enumerate(result):
+            ans.append(np.argmax(item))
+    ans = ans[0:len(dataset)]
     return ans
 
-def output_submit_file(ans, output_filename):
+def output_submit_file(ans, output_filename, dataset):
     f = open(output_filename, 'w')
     for index, row in enumerate(ans):
         f.write("{0},{1}\n".format(str(index),str(ans[index])))
     f.close()
+
+    f2 = open('sample.csv', 'w')
+    for index, row in enumerate(ans):
+        f2.write("{0}\t{1}\r\n".format(dataset.get_filename(index),str(ans[index])))
+    f2.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -59,6 +65,7 @@ if __name__ == '__main__':
     chainer.serializers.load_npz(args.model_snapshot, model)
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     ans = predict(model, trial_data, args.iteration)
-    output_submit_file(ans, output_filename)
+    output_submit_file(ans, output_filename, trial_data)
