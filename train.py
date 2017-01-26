@@ -25,11 +25,27 @@ if __name__ == '__main__':
     parser.add_argument('--trainer_snapshot_interval', '-t', type=int, default=0,
                                 help='Interval of trainer snapshot')
     parser.add_argument('--resume', '-r', default='', help='Resume the training from snapshot')
+    parser.add_argument('--test_sample_start', '-s', default=None, type=int, help='Resume the training from snapshot')
+    parser.add_argument('--test_sample_end', '-d', default=None, type=int, help='Resume the training from snapshot')
     args = parser.parse_args()
-    
-    train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(0,7999)), data_dir=args.data_dir)
-    test_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), data_dir=args.data_dir)
-    
+  
+    if args.test_sample_start is not None and args.test_sample_end is not None: 
+        all_samples = list(range(0,10000))
+        test_samples = list(range(args.test_sample_start, args.test_sample_end))
+        train_samples = list(set(all_samples) - set(test_samples))
+
+    if args.test_sample_start is not None and args.test_sample_end is not None: 
+        print('came1')
+        print(test_samples)
+        print(train_samples)
+        train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=train_samples, data_dir=args.data_dir)
+        test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=test_samples,  data_dir=args.data_dir)
+    else:
+        print('came2')
+        train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, data_dir=args.data_dir)
+        test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=-1, data_dir=args.data_dir)
+    exit() 
+
     train_iter = iterators.SerialIterator(train_data, batch_size=50, repeat=True, shuffle=True)
     test_iter = iterators.SerialIterator(test_data, batch_size=50, repeat=False, shuffle=True)
 
