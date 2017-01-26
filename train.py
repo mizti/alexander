@@ -41,7 +41,6 @@ if __name__ == '__main__':
     else:
         train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, data_dir=args.data_dir)
         test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=-1, data_dir=args.data_dir)
-    exit() 
 
     train_iter = iterators.SerialIterator(train_data, batch_size=50, repeat=True, shuffle=True)
     test_iter = iterators.SerialIterator(test_data, batch_size=50, repeat=False, shuffle=True)
