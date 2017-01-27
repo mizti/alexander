@@ -15,32 +15,43 @@ from train import *
 from image_dataset import *
 import math
 
-def predict(model, dataset, iteration=1, minibatch_size=50):
+#def predict(model, dataset, predict_iteration=1, minibatch_size=50):
+def predict(model, dataset, predict_iteration=1, minibatch_size=3):
     ans = []
     iterator = iterators.SerialIterator(dataset, batch_size=minibatch_size, repeat=True, shuffle=False)
     iter_num = math.ceil(len(dataset) / minibatch_size)
-    for _ in range(iter_num):
-        print(_)
-        part_dataset = iterator.next()
-        xs = []
-        for index, item in enumerate(part_dataset):
-            xs.append(item[0])
-        xs = np.array(xs) 
-        result = model.predict(xs)
-        for index, item in enumerate(result):
-            ans.append(np.argmax(item))
-    ans = ans[0:len(dataset)]
+    print("iter_num" + str(iter_num))
+    print(len(dataset))
+    current_ans = []
+    predict_iteration = 3 
+    for pi in range(predict_iteration):
+        for i in range(iter_num):
+            part_dataset = iterator.next()
+            xs = []
+            for index, item in enumerate(part_dataset):
+                xs.append(item[0])
+            xs = np.array(xs) 
+            result = model.predict(xs)
+            for index, item in enumerate(result):
+                if pi == 0:
+                    current_ans.append([np.argmax(item), item[np.argmax(item)]])
+                    current_ans = current_ans[0:len(dataset)]
+                else:
+                    if current_ans[index][1] < item[np.argmax(item)]:
+                        current_ans[index][0] = np.argmax(item)
+                        current_ans[index][1] = item[np.argmax(item)]
+    ans = current_ans
     return ans
 
 def output_submit_file(ans, output_filename, dataset):
     f = open(output_filename, 'w')
     for index, row in enumerate(ans):
-        f.write("{0},{1}\n".format(str(index),str(ans[index])))
+        f.write("{0},{1}\n".format(str(index),str(ans[index][0])))
     f.close()
 
     f2 = open('sample.csv', 'w')
     for index, row in enumerate(ans):
-        f2.write("{0}\t{1}\r\n".format(dataset.get_filename(index),str(ans[index])))
+        f2.write("{0}\t{1}\r\n".format(dataset.get_filename(index),str(ans[index][0])))
     f2.close()
 
 if __name__ == '__main__':
@@ -63,9 +74,10 @@ if __name__ == '__main__':
     else:
         print('please select CNN or GoogLeNet')
     chainer.serializers.load_npz(args.model_snapshot, model)
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list([0,1,2,3]), mode='trial')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), mode='train')
-    ans = predict(model, trial_data, args.iteration)
-    output_submit_file(ans, output_filename, trial_data)
+    ans_from_model = predict(model, trial_data, args.iteration)
+    output_submit_file(ans_from_model, output_filename, trial_data)
