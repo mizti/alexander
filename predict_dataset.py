@@ -10,27 +10,28 @@ from PIL import Image
 import csv
 import chainer
 import chainer.links as L
-from chainer import datasets, iterators
+from chainer import datasets, iterators, cuda
 from train import *
 from image_dataset import *
 import math
 
 #def predict(model, dataset, predict_iteration=1, minibatch_size=50):
-def predict(model, dataset, predict_iteration=1, minibatch_size=3):
+def predict(model, dataset, predict_iteration=1, minibatch_size=3, device=-1):
     ans = []
     iterator = iterators.SerialIterator(dataset, batch_size=minibatch_size, repeat=True, shuffle=False)
     iter_num = math.ceil(len(dataset) / minibatch_size)
-    print("iter_num" + str(iter_num))
-    print(len(dataset))
     current_ans = []
-    predict_iteration = 3 
     for pi in range(predict_iteration):
         for i in range(iter_num):
+            print(i)
             part_dataset = iterator.next()
             xs = []
             for index, item in enumerate(part_dataset):
                 xs.append(item[0])
-            xs = np.array(xs) 
+            if device < 0:
+            	xs = np.array(xs)
+            else: 
+                xs = cuda.to_gpu(np.array(xs))
             result = model.predict(xs)
             for index, item in enumerate(result):
                 if pi == 0:
@@ -73,11 +74,16 @@ if __name__ == '__main__':
         model = GoogLeNetBN()
     else:
         print('please select CNN or GoogLeNet')
+
+    if args.gpu >= 0:
+        chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
+        model.to_gpu()  # Copy the model to the GPU
+
     chainer.serializers.load_npz(args.model_snapshot, model)
-    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list([0,1,2,3]), mode='trial')
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list([0,1,2,3]), mode='trial')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), mode='train')
-    ans_from_model = predict(model, trial_data, args.iteration)
+    ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=1, device=args.gpu)
     output_submit_file(ans_from_model, output_filename, trial_data)
