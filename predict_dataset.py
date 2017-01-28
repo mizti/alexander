@@ -51,7 +51,7 @@ def output_submit_file(ans, output_filename, dataset):
         f.write("{0},{1}\n".format(str(index),str(ans[index][0])))
     f.close()
 
-    f2 = open('sample.csv', 'w')
+    f2 = open('result/sample.csv', 'w')
     for index, row in enumerate(ans):
         f2.write("{0}\t{1}\r\n".format(dataset.get_filename(index),str(ans[index][0])))
     f2.close()
@@ -67,6 +67,8 @@ if __name__ == '__main__':
 
     if args.output == 'default':
         output_filename = 'output_' + args.model_snapshot + '_' + str(args.iteration) + '.csv'
+    else:
+        output_filename = args.output
 
     model = ''
     if args.net == 'CNN':
