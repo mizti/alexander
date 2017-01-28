@@ -22,6 +22,7 @@ def predict(model, dataset, predict_iteration=1, minibatch_size=3, device=-1):
     iter_num = math.ceil(len(dataset) / minibatch_size)
     current_ans = []
     for pi in range(predict_iteration):
+        print("current predict_iteration=" + str(pi))
         for i in range(iter_num):
             print(i)
             part_dataset = iterator.next()
