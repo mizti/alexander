@@ -24,18 +24,21 @@ def predict(model, dataset, predict_iteration=1, minibatch_size=3, device=-1):
     for pi in range(predict_iteration):
         print("current predict_iteration=" + str(pi))
         for i in range(iter_num):
-            print(i)
+            print('iteration' + str(i))
             part_dataset = iterator.next()
             xs = []
             for index, item in enumerate(part_dataset):
                 xs.append(item[0])
+
             if device < 0:
             	xs = np.array(xs)
             else: 
                 xs = cuda.to_gpu(np.array(xs))
+
             result = model.predict(xs)
             for index, item in enumerate(result):
                 if pi == 0:
+                    print('index= ' + str(index) + ' item = ' + str(item))
                     current_ans.append([np.argmax(item), item[np.argmax(item)]])
                     current_ans = current_ans[0:len(dataset)]
                 else:
@@ -51,7 +54,7 @@ def output_submit_file(ans, output_filename, dataset):
         f.write("{0},{1}\n".format(str(index),str(ans[index][0])))
     f.close()
 
-    f2 = open('result/sample.csv', 'w')
+    f2 = open('/home/ubuntu/result/sample.csv', 'w')
     for index, row in enumerate(ans):
         f2.write("{0}\t{1}\r\n".format(dataset.get_filename(index),str(ans[index][0])))
     f2.close()
@@ -88,5 +91,5 @@ if __name__ == '__main__':
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), mode='train')
-    ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=1, device=args.gpu)
+    ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu)
     output_submit_file(ans_from_model, output_filename, trial_data)
