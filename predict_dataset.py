@@ -91,5 +91,5 @@ if __name__ == '__main__':
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), mode='train')
-    ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu)
+    ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=100, device=args.gpu)
     output_submit_file(ans_from_model, output_filename, trial_data)
