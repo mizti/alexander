@@ -78,8 +78,8 @@ if __name__ == '__main__':
     else:
         output_filename = args.output
 
-    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(0,4)), mode='trial')
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(0,4)), mode='trial')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), mode='train')
@@ -102,7 +102,7 @@ if __name__ == '__main__':
             model.to_gpu()  # Copy the model to the GPU
         #ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu)
         #ans.append(predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu))
-        ans_candidates.append(predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=3, device=args.gpu))
+        ans_candidates.append(predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu))
 
     ans_candidates = np.array(ans_candidates)
 
