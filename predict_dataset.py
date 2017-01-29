@@ -38,26 +38,31 @@ def predict(model, dataset, predict_iteration=1, minibatch_size=3, device=-1):
             result = model.predict(xs)
             for index, item in enumerate(result):
                 if pi == 0:
-                    print('index= ' + str(index) + ' item = ' + str(item))
-                    current_ans.append([np.argmax(item), item[np.argmax(item)]])
+                    current_ans.append([int(np.argmax(item)), item[np.argmax(item)]])
                     current_ans = current_ans[0:len(dataset)]
                 else:
                     if current_ans[index][1] < item[np.argmax(item)]:
-                        current_ans[index][0] = np.argmax(item)
-                        current_ans[index][1] = item[np.argmax(item)]
+                        current_ans[index] = [int(np.argmax(item)), item[np.argmax(item)]]
+                    current_ans = current_ans[0:len(dataset)]
     ans = current_ans
     return ans
 
 def output_submit_file(ans, output_filename, dataset):
     f = open(output_filename, 'w')
     for index, row in enumerate(ans):
-        f.write("{0},{1}\n".format(str(index),str(ans[index][0])))
+        f.write("{0},{1}\n".format(str(index),str(ans[index])))
     f.close()
 
     f2 = open('/home/ubuntu/result/sample.csv', 'w')
     for index, row in enumerate(ans):
-        f2.write("{0}\t{1}\r\n".format(dataset.get_filename(index),str(ans[index][0])))
+        f2.write("{0}\t{1}\r\n".format(dataset.get_filename(index),str(ans[index])))
     f2.close()
+
+def mode(arr):
+    r = [0] * (max(arr) + 1)
+    for a in arr:
+        r[a] += 1
+    return r.index(max(r))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -73,6 +78,12 @@ if __name__ == '__main__':
     else:
         output_filename = args.output
 
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
+    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(0,4)), mode='trial')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
+    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), mode='train')
+
     model = ''
     if args.net == 'CNN':
         model = CNN()
@@ -81,15 +92,24 @@ if __name__ == '__main__':
     else:
         print('please select CNN or GoogLeNet')
 
-    if args.gpu >= 0:
-        chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
-        model.to_gpu()  # Copy the model to the GPU
+    ans_candidates = [] 
+    model_snapshots = args.model_snapshot.split(',')
+    for snaps in model_snapshots:
+        print('============= ' + snaps + ' =================')
+        chainer.serializers.load_npz(snaps, model)
+        if args.gpu >= 0:
+            chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
+            model.to_gpu()  # Copy the model to the GPU
+        #ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu)
+        #ans.append(predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu))
+        ans_candidates.append(predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=3, device=args.gpu))
 
-    chainer.serializers.load_npz(args.model_snapshot, model)
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='trial')
-    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list([0,1,2,3]), mode='trial')
-    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, mode='train')
-    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,9999)), mode='train')
-    #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), mode='train')
-    ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=100, device=args.gpu)
-    output_submit_file(ans_from_model, output_filename, trial_data)
+    ans_candidates = np.array(ans_candidates)
+
+    ans = []
+    for i in range(0,len(trial_data)):
+        #print(ans_candidates[:,i][:,0])
+        #print(mode(ans_candidates[:,i][:,0]))
+        ans.append(mode(ans_candidates[:,i][:,0]))
+
+    output_submit_file(ans, output_filename, trial_data)
