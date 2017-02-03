@@ -10,13 +10,14 @@ from chainer.training import extensions
 from image_dataset import *
 from predict_dataset import *
 from net.nets import *
+from net.resnet import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                             help='GPU ID (negative value indicates CPU)')
     
-    parser.add_argument('--net', '-n', default='CNN', help='Choose network to train')
+    parser.add_argument('--net', '-n', default='ResNet', help='Choose network to train')
     parser.add_argument('--epoch', '-e', default=200, help='Numbers of learning epoch')
     parser.add_argument('--data_dir', '-i', default='data', help='Directory of image files.')
     parser.add_argument('--out', '-o', default='result', help='Directory to output the result')
@@ -52,10 +53,14 @@ if __name__ == '__main__':
         model = L.Classifier(predictor)
     elif args.net == 'GoogLeNet':
         model = GoogLeNetBN()
+    elif args.net == 'ResNet':
+        model = ResNet152Layers()
     else:
         print('Such network is not defined')
         exit()
     
+
+
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
         model.to_gpu()  # Copy the model to the GPU
