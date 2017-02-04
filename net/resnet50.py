@@ -32,7 +32,7 @@ from chainer.variable import Variable
 from utils.tools import *
 import numpy as np
 
-class ResNet152Layers(link.Chain):
+class ResNet50Layers(link.Chain):
     def __init__(self, pretrained_model='auto', data_dir='data'):
         if pretrained_model:
             # As a sampling process is time-consuming,
@@ -41,22 +41,23 @@ class ResNet152Layers(link.Chain):
         else:
             # employ default initializers used in the original paper
             kwargs = {'initialW': normal.HeNormal(scale=1.0)}
-        super(ResNet152Layers, self).__init__(
-            conv1=Convolution2D(3, 64, 7, 2, 3, nobias=True, **kwargs),
+        super(ResNet50Layers, self).__init__(
+            #conv1=Convolution2D(3, 64, 7, 2, 3, nobias=True, **kwargs),
+            conv1=Convolution2D(3, 64, 7, 2, 3, **kwargs),
             bn1=BatchNormalization(64),
             res2=BuildingBlock(3, 64, 64, 256, 1, **kwargs),
-            res3=BuildingBlock(8, 256, 128, 512, 2, **kwargs),
-            res4=BuildingBlock(36, 512, 256, 1024, 2, **kwargs),
+            res3=BuildingBlock(4, 256, 128, 512, 2, **kwargs),
+            res4=BuildingBlock(6, 512, 256, 1024, 2, **kwargs),
             res5=BuildingBlock(3, 1024, 512, 2048, 2, **kwargs),
             fc6=Linear(2048, 1000),
             #fc6=Linear(2048, 25),
             #fc7=Linear(1000, 25),
         )
         if pretrained_model == 'auto':
-            file_path = download_model(data_dir, 'resnet') # download caffemodel
+            file_path = download_model(data_dir, 'resnet50') # download caffemodel
             print(file_path)
             #_retrieve('ResNet-152-model.npz', 'ResNet-152-model.caffemodel', self)
-            _retrieve('ResNet-152-model.npz', file_path, self)
+            _retrieve('ResNet-50-model.npz', file_path, self)
             print('retrieve completed')
         elif pretrained_model:
             npz.load_npz(pretrained_model, self)
@@ -104,7 +105,7 @@ class ResNet152Layers(link.Chain):
         from chainer.links.caffe.caffe_function import CaffeFunction
         caffemodel = CaffeFunction(path_caffemodel)
         chainermodel = cls(pretrained_model=None)
-        _transfer_resnet152(caffemodel, chainermodel)
+        _transfer_resnet50(caffemodel, chainermodel)
         npz.save_npz(path_npz, chainermodel, compression=False)
 
     #def __call__(self, x, layers=['prob'], test=True):
@@ -380,17 +381,19 @@ def _transfer_block(src, dst, names):
         _transfer_bottleneckB(src, dst_bottleneckB, name)
 
 
-def _transfer_resnet152(src, dst):
+def _transfer_resnet50(src, dst):
     dst.conv1.W.data[:] = src.conv1.W.data
-    # dst.conv1.b.data[:] = src.conv1.b.data
+    dst.conv1.b.data[:] = src.conv1.b.data
     dst.bn1.avg_mean[:] = src.bn_conv1.avg_mean
     dst.bn1.avg_var[:] = src.bn_conv1.avg_var
     dst.bn1.gamma.data[:] = src.scale_conv1.W.data
     dst.bn1.beta.data[:] = src.scale_conv1.bias.b.data
 
     _transfer_block(src, dst.res2, ['2a', '2b', '2c'])
-    _transfer_block(src, dst.res3, ['3a', '3b1', '3b2', '3b3', '3b4', '3b5', '3b6', '3b7'])
-    _transfer_block(src, dst.res4, ['4a'] + ['4b{}'.format(x) for x in range(1, 36)])
+    #_transfer_block(src, dst.res3, ['3a', '3b1', '3b2', '3b3', '3b4', '3b5', '3b6', '3b7'])
+    #_transfer_block(src, dst.res4, ['4a'] + ['4b{}'.format(x) for x in range(1, 36)])
+    _transfer_block(src, dst.res3, ['3a', '3b', '3c', '3d'])
+    _transfer_block(src, dst.res4, ['4a', '4b', '4c', '4d', '4e', '4f'])
     _transfer_block(src, dst.res5, ['5a', '5b', '5c'])
 
     dst.fc6.W.data[:] = src.fc1000.W.data
@@ -404,7 +407,7 @@ def _make_npz(path_npz, path_caffemodel, model):
             'The pre-trained caffemodel does not exist. Please download it '
             'from \'https://github.com/KaimingHe/deep-residual-networks\', '
             'and place it on {}'.format(path_caffemodel))
-    ResNet152Layers.convert_caffemodel_to_npz(path_caffemodel, path_npz)
+    ResNet50Layers.convert_caffemodel_to_npz(path_caffemodel, path_npz)
     npz.load_npz(path_npz, model)
     return model
 

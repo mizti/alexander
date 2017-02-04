@@ -11,10 +11,14 @@ def download_model(path, model_name):
     elif model_name == 'googlenet':
         url = 'http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel'
         name = 'bvlc_googlenet.caffemodel'
-    elif model_name == 'resnet':
+    elif model_name == 'resnet152':
         #url = 'http://research.microsoft.com/en-us/um/people/kahe/resnet/models.zip'
         url = 'https://s3-ap-northeast-1.amazonaws.com/alexandermodeldata/ResNet-152-model.caffemodel'
         name = 'ResNet-152-model.caffemodel'
+    elif model_name == 'resnet50':
+        #url = 'http://research.microsoft.com/en-us/um/people/kahe/resnet/models.zip'
+        url = 'https://s3-ap-northeast-1.amazonaws.com/alexandermodeldata/ResNet-50-model.caffemodel'
+        name = 'ResNet-50-model.caffemodel'
     else:
         raise RuntimeError('Invalid model type. Choose from '
                            'alexnet, caffenet, googlenet and resnet.')
