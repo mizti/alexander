@@ -29,7 +29,6 @@ if __name__ == '__main__':
     parser.add_argument('--test_sample_start', '-s', default=None, type=int, help='Resume the training from snapshot')
     parser.add_argument('--test_sample_end', '-d', default=None, type=int, help='Resume the training from snapshot')
     args = parser.parse_args()
-  
     if args.test_sample_start is not None and args.test_sample_end is not None: 
         all_samples = list(range(0,10000))
         test_samples = list(range(args.test_sample_start, args.test_sample_end))
@@ -54,7 +53,7 @@ if __name__ == '__main__':
     elif args.net == 'GoogLeNet':
         model = GoogLeNetBN()
     elif args.net == 'ResNet':
-        predictor = ResNet152Layers()
+        predictor = ResNet152Layers(data_dir=args.data_dir)
         model = L.Classifier(predictor)
         #model = ResNet152Layers()
     else:

@@ -33,7 +33,7 @@ from utils.tools import *
 import numpy as np
 
 class ResNet152Layers(link.Chain):
-    def __init__(self, pretrained_model='auto'):
+    def __init__(self, pretrained_model='auto', data_dir='data'):
         if pretrained_model:
             # As a sampling process is time-consuming,
             # we employ a zero initializer for faster computation.
@@ -53,26 +53,27 @@ class ResNet152Layers(link.Chain):
             #fc7=Linear(1000, 25),
         )
         if pretrained_model == 'auto':
-            file_path = download_model('data', 'resnet') # download caffemodel
+            file_path = download_model(data_dir, 'resnet') # download caffemodel
+            print(file_path)
             #_retrieve('ResNet-152-model.npz', 'ResNet-152-model.caffemodel', self)
             _retrieve('ResNet-152-model.npz', file_path, self)
             print('retrieve completed')
         elif pretrained_model:
             npz.load_npz(pretrained_model, self)
             print('pretrained model loaded')
-        print(self.fc6._params)
-        del(self.fc6._params[0])
+        #print(self.fc6._params)
         #del(self.fc6._params[0])
-        print(self.fc6._params)
-        print(self.fc6.__dict__)
-        del(self.fc6.__dict__['W'])
-        #del(self.fc6.__dict__['b'])
-        print(self.fc6.__dict__)
-        print('----')
-        self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
-        self.fc6.out_size=25
-        print(self.fc6._params)
-        print(self.fc6.__dict__)
+        ##del(self.fc6._params[0])
+        #print(self.fc6._params)
+        #print(self.fc6.__dict__)
+        #del(self.fc6.__dict__['W'])
+        ##del(self.fc6.__dict__['b'])
+        #print(self.fc6.__dict__)
+        #print('----')
+        #self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
+        #self.fc6.out_size=25
+        #print(self.fc6._params)
+        #print(self.fc6.__dict__)
         self.functions = OrderedDict([
             ('conv1', [self.conv1, self.bn1, relu]),
             ('pool1', [lambda x: max_pooling_2d(x, ksize=3, stride=2)]),
