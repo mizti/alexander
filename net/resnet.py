@@ -1,7 +1,7 @@
 from __future__ import print_function
 from collections import OrderedDict
 import os
-
+    
 import numpy
 try:
     from PIL import Image
@@ -21,6 +21,7 @@ from chainer.functions.pooling.average_pooling_2d import average_pooling_2d
 from chainer.functions.pooling.max_pooling_2d import max_pooling_2d
 from chainer.initializers import constant
 from chainer.initializers import normal
+from chainer.initializers import HeNormal
 from chainer import link
 from chainer.links.connection.convolution_2d import Convolution2D
 from chainer.links.connection.linear import Linear
@@ -28,7 +29,8 @@ from chainer.links.normalization.batch_normalization import BatchNormalization
 from chainer.serializers import npz
 from chainer.utils import imgproc
 from chainer.variable import Variable
-from net.utils import *
+from utils.tools import *
+import numpy as np
 
 class ResNet152Layers(link.Chain):
     def __init__(self, pretrained_model='auto'):
@@ -47,13 +49,30 @@ class ResNet152Layers(link.Chain):
             res4=BuildingBlock(36, 512, 256, 1024, 2, **kwargs),
             res5=BuildingBlock(3, 1024, 512, 2048, 2, **kwargs),
             fc6=Linear(2048, 1000),
+            #fc6=Linear(2048, 25),
+            #fc7=Linear(1000, 25),
         )
         if pretrained_model == 'auto':
             file_path = download_model('data', 'resnet') # download caffemodel
             #_retrieve('ResNet-152-model.npz', 'ResNet-152-model.caffemodel', self)
             _retrieve('ResNet-152-model.npz', file_path, self)
+            print('retrieve completed')
         elif pretrained_model:
             npz.load_npz(pretrained_model, self)
+            print('pretrained model loaded')
+        print(self.fc6._params)
+        del(self.fc6._params[0])
+        #del(self.fc6._params[0])
+        print(self.fc6._params)
+        print(self.fc6.__dict__)
+        del(self.fc6.__dict__['W'])
+        #del(self.fc6.__dict__['b'])
+        print(self.fc6.__dict__)
+        print('----')
+        self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
+        self.fc6.out_size=25
+        print(self.fc6._params)
+        print(self.fc6.__dict__)
         self.functions = OrderedDict([
             ('conv1', [self.conv1, self.bn1, relu]),
             ('pool1', [lambda x: max_pooling_2d(x, ksize=3, stride=2)]),
@@ -63,7 +82,8 @@ class ResNet152Layers(link.Chain):
             ('res5', [self.res5]),
             ('pool5', [_global_average_pooling_2d]),
             ('fc6', [self.fc6]),
-            ('prob', [softmax]),
+            #('fc7', [self.fc7]),
+            #('prob', [softmax]),
         ])
 
     @property
@@ -86,7 +106,8 @@ class ResNet152Layers(link.Chain):
         _transfer_resnet152(caffemodel, chainermodel)
         npz.save_npz(path_npz, chainermodel, compression=False)
 
-    def __call__(self, x, layers=['prob'], test=True):
+    #def __call__(self, x, layers=['prob'], test=True):
+    def __call__(self, x, layers=['fc6'], test=True):
         """Computes all the feature maps specified by ``layers``.
         Args:
             x (~chainer.Variable): Input variable.
@@ -100,7 +121,7 @@ class ResNet152Layers(link.Chain):
 
         h = x
         activations = {}
-        target_layers = set(layers)
+        target_layers = set(layers) # prob
         for key, funcs in self.functions.items():
             if len(target_layers) == 0:
                 break
@@ -113,7 +134,8 @@ class ResNet152Layers(link.Chain):
             if key in target_layers:
                 activations[key] = h
                 target_layers.remove(key)
-        return activations
+        return activations['fc6']
+        #return activations
 
     def extract(self, images, layers=['pool5'], size=(224, 224),
                 test=True, volatile=flag.OFF):
@@ -318,7 +340,6 @@ class BottleneckB(link.Chain):
         h = relu(self.bn2(self.conv2(h), test=test))
         h = self.bn3(self.conv3(h), test=test)
         return relu(h + x)
-
 
 def _global_average_pooling_2d(x):
     n, channel, rows, cols = x.data.shape

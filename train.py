@@ -54,13 +54,13 @@ if __name__ == '__main__':
     elif args.net == 'GoogLeNet':
         model = GoogLeNetBN()
     elif args.net == 'ResNet':
-        model = ResNet152Layers()
+        predictor = ResNet152Layers()
+        model = L.Classifier(predictor)
+        #model = ResNet152Layers()
     else:
         print('Such network is not defined')
         exit()
     
-
-
     if args.gpu >= 0:
         chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
         model.to_gpu()  # Copy the model to the GPU
