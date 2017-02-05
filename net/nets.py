@@ -227,14 +227,7 @@ class ClassifierForResNet(link.Chain):
         self.y = None
         self.loss = None
         self.accuracy = None
-        print('======1======')
-        print(x.__class__)
-        print(x)
-        print(*x)
         self.y = self.predictor(*x)['fc6']
-        print('======2======')
-        print(self.y.__class__) #<class 'chainer.variable.Variable'>
-        print(self.y.data.shape) 
         self.loss = self.lossfun(self.y, t)
         reporter.report({'loss': self.loss}, self)
         if self.compute_accuracy:
