@@ -54,10 +54,10 @@ if __name__ == '__main__':
     elif args.net == 'GoogLeNet':
         model = GoogLeNetBN()
     elif args.net == 'ResNet50':
-        predictor = ResNet50Layers(data_dir=args.data_dir)
+        predictor = ResNet50Layers(pretrained_model=None, data_dir=args.data_dir)
         model = L.Classifier(predictor)
     elif args.net == 'ResNet152':
-        predictor = ResNet152Layers(data_dir=args.data_dir)
+        predictor = ResNet152Layers(pretrained_model=None, data_dir=args.data_dir)
         model = L.Classifier(predictor)
         #model = ResNet152Layers()
     else:

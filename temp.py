@@ -1,7 +1,7 @@
 from __future__ import print_function
 from collections import OrderedDict
 import os
-    
+
 import numpy
 try:
     from PIL import Image
@@ -21,7 +21,6 @@ from chainer.functions.pooling.average_pooling_2d import average_pooling_2d
 from chainer.functions.pooling.max_pooling_2d import max_pooling_2d
 from chainer.initializers import constant
 from chainer.initializers import normal
-from chainer.initializers import HeNormal
 from chainer import link
 from chainer.links.connection.convolution_2d import Convolution2D
 from chainer.links.connection.linear import Linear
@@ -29,11 +28,45 @@ from chainer.links.normalization.batch_normalization import BatchNormalization
 from chainer.serializers import npz
 from chainer.utils import imgproc
 from chainer.variable import Variable
-from utils.tools import *
-import numpy as np
+
 
 class ResNet50Layers(link.Chain):
-    def __init__(self, pretrained_model='auto', data_dir='data'):
+
+    """A pre-trained CNN model with 50 layers provided by MSRA [1].
+    When you specify the path of the pre-trained chainer model serialized as
+    a ``.npz`` file in the constructor, this chain model automatically
+    initializes all the parameters with it.
+    This model would be useful when you want to extract a semantic feature
+    vector per image, or fine-tune the model on a different dataset.
+    Note that unlike ``VGG16Layers``, it does not automatically download a
+    pre-trained caffemodel. This caffemodel can be downloaded at
+    `GitHub <https://github.com/KaimingHe/deep-residual-networks>`_.
+    If you want to manually convert the pre-trained caffemodel to a chainer
+    model that can be specified in the constructor,
+    please use ``convert_caffemodel_to_npz`` classmethod instead.
+    .. [1] K. He et. al., `Deep Residual Learning for Image Recognition
+        <https://arxiv.org/abs/1512.03385>`_
+    Args:
+        pretrained_model (str): the destination of the pre-trained
+            chainer model serialized as a ``.npz`` file.
+            If this argument is specified as ``auto``,
+            it automatically loads and converts the caffemodel from
+            ``$CHAINER_DATASET_ROOT/pfnet/chainer/models/ResNet-50-model.caffemodel``,
+            where ``$CHAINER_DATASET_ROOT`` is set as
+            ``$HOME/.chainer/dataset`` unless you specify another value
+            as an environment variable. Note that in this case the converted
+            chainer model is stored on the same directory and automatically
+            used from the second time.
+            If the argument is specified as ``None``, all the parameters
+            are not initialized by the pre-trained model, but the default
+            initializer used in the original paper, i.e.,
+            ``chainer.initializers.HeNormal(scale=1.0)``.
+    Attributes:
+        available_layers (list of str): The list of available layer names
+            used by ``__call__`` and ``extract`` methods.
+    """
+
+    def __init__(self, pretrained_model='auto'):
         if pretrained_model:
             # As a sampling process is time-consuming,
             # we employ a zero initializer for faster computation.
@@ -48,32 +81,13 @@ class ResNet50Layers(link.Chain):
             res3=BuildingBlock(4, 256, 128, 512, 2, **kwargs),
             res4=BuildingBlock(6, 512, 256, 1024, 2, **kwargs),
             res5=BuildingBlock(3, 1024, 512, 2048, 2, **kwargs),
-            #fc6=Linear(2048, 1000),
-            fc6=Linear(2048, 25),
-            #fc7=Linear(1000, 25),
+            fc6=Linear(2048, 1000),
         )
         if pretrained_model == 'auto':
-            file_path = download_model(data_dir, 'resnet50') # download caffemodel
-            print(file_path)
-            #_retrieve('ResNet-152-model.npz', 'ResNet-152-model.caffemodel', self)
-            _retrieve('ResNet-50-model.npz', file_path, self)
-            print('retrieve completed')
+            _retrieve(
+                'ResNet-50-model.npz', 'ResNet-50-model.caffemodel', self)
         elif pretrained_model:
             npz.load_npz(pretrained_model, self)
-            print('pretrained model loaded')
-        #print(self.fc6._params)
-        #del(self.fc6._params[0])
-        ##del(self.fc6._params[0])
-        #print(self.fc6._params)
-        #print(self.fc6.__dict__)
-        #del(self.fc6.__dict__['W'])
-        ##del(self.fc6.__dict__['b'])
-        #print(self.fc6.__dict__)
-        #print('----')
-        #self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
-        #self.fc6.out_size=25
-        #print(self.fc6._params)
-        #print(self.fc6.__dict__)
         self.functions = OrderedDict([
             ('conv1', [self.conv1, self.bn1, relu]),
             ('pool1', [lambda x: max_pooling_2d(x, ksize=3, stride=2)]),
@@ -83,8 +97,7 @@ class ResNet50Layers(link.Chain):
             ('res5', [self.res5]),
             ('pool5', [_global_average_pooling_2d]),
             ('fc6', [self.fc6]),
-            #('fc7', [self.fc7]),
-            #('prob', [softmax]),
+            ('prob', [softmax]),
         ])
 
     @property
@@ -107,8 +120,7 @@ class ResNet50Layers(link.Chain):
         _transfer_resnet50(caffemodel, chainermodel)
         npz.save_npz(path_npz, chainermodel, compression=False)
 
-    #def __call__(self, x, layers=['prob'], test=True):
-    def __call__(self, x, layers=['fc6'], test=False):
+    def __call__(self, x, layers=['prob'], test=True):
         """Computes all the feature maps specified by ``layers``.
         Args:
             x (~chainer.Variable): Input variable.
@@ -122,7 +134,7 @@ class ResNet50Layers(link.Chain):
 
         h = x
         activations = {}
-        target_layers = set(layers) # prob
+        target_layers = set(layers)
         for key, funcs in self.functions.items():
             if len(target_layers) == 0:
                 break
@@ -135,8 +147,7 @@ class ResNet50Layers(link.Chain):
             if key in target_layers:
                 activations[key] = h
                 target_layers.remove(key)
-        return activations['fc6']
-        #return activations
+        return activations
 
     def extract(self, images, layers=['pool5'], size=(224, 224),
                 test=True, volatile=flag.OFF):
@@ -342,6 +353,7 @@ class BottleneckB(link.Chain):
         h = self.bn3(self.conv3(h), test=test)
         return relu(h + x)
 
+
 def _global_average_pooling_2d(x):
     n, channel, rows, cols = x.data.shape
     h = average_pooling_2d(x, (rows, cols), stride=1)
@@ -389,8 +401,6 @@ def _transfer_resnet50(src, dst):
     dst.bn1.beta.data[:] = src.scale_conv1.bias.b.data
 
     _transfer_block(src, dst.res2, ['2a', '2b', '2c'])
-    #_transfer_block(src, dst.res3, ['3a', '3b1', '3b2', '3b3', '3b4', '3b5', '3b6', '3b7'])
-    #_transfer_block(src, dst.res4, ['4a'] + ['4b{}'.format(x) for x in range(1, 36)])
     _transfer_block(src, dst.res3, ['3a', '3b', '3c', '3d'])
     _transfer_block(src, dst.res4, ['4a', '4b', '4c', '4d', '4e', '4f'])
     _transfer_block(src, dst.res5, ['5a', '5b', '5c'])
