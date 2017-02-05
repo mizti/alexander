@@ -42,15 +42,14 @@ class ResNet50Layers(link.Chain):
             # employ default initializers used in the original paper
             kwargs = {'initialW': normal.HeNormal(scale=1.0)}
         super(ResNet50Layers, self).__init__(
-            #conv1=Convolution2D(3, 64, 7, 2, 3, nobias=True, **kwargs),
             conv1=Convolution2D(3, 64, 7, 2, 3, **kwargs),
             bn1=BatchNormalization(64),
             res2=BuildingBlock(3, 64, 64, 256, 1, **kwargs),
             res3=BuildingBlock(4, 256, 128, 512, 2, **kwargs),
             res4=BuildingBlock(6, 512, 256, 1024, 2, **kwargs),
             res5=BuildingBlock(3, 1024, 512, 2048, 2, **kwargs),
-            fc6=Linear(2048, 1000),
-            #fc6=Linear(2048, 25),
+            #fc6=Linear(2048, 1000),
+            fc6=Linear(2048, 25),
             #fc7=Linear(1000, 25),
         )
         if pretrained_model == 'auto':
