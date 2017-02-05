@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
     #train_iter = iterators.SerialIterator(train_data, batch_size=100, repeat=True, shuffle=True)
     #test_iter = iterators.SerialIterator(test_data, batch_size=100, repeat=False, shuffle=True)
-    train_iter = iterators.SerialIterator(train_data, batch_size=100, repeat=True, shuffle=True)
-    test_iter = iterators.SerialIterator(test_data, batch_size=100, repeat=False, shuffle=True)
+    train_iter = iterators.SerialIterator(train_data, batch_size=50, repeat=True, shuffle=True)
+    test_iter = iterators.SerialIterator(test_data, batch_size=50, repeat=False, shuffle=True)
 
     predictor = ''
     model = ''
