@@ -43,8 +43,10 @@ if __name__ == '__main__':
         train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, data_dir=args.data_dir)
         test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=-1, data_dir=args.data_dir)
 
-    train_iter = iterators.SerialIterator(train_data, batch_size=50, repeat=True, shuffle=True)
-    test_iter = iterators.SerialIterator(test_data, batch_size=50, repeat=False, shuffle=True)
+    #train_iter = iterators.SerialIterator(train_data, batch_size=100, repeat=True, shuffle=True)
+    #test_iter = iterators.SerialIterator(test_data, batch_size=100, repeat=False, shuffle=True)
+    train_iter = iterators.SerialIterator(train_data, batch_size=100, repeat=True, shuffle=True)
+    test_iter = iterators.SerialIterator(test_data, batch_size=100, repeat=False, shuffle=True)
 
     predictor = ''
     model = ''
@@ -54,11 +56,11 @@ if __name__ == '__main__':
     elif args.net == 'GoogLeNet':
         model = GoogLeNetBN()
     elif args.net == 'ResNet50':
-        predictor = ResNet50Layers(pretrained_model=None, data_dir=args.data_dir)
-        model = L.Classifier(predictor)
+        predictor = ResNet50Layers(pretrained_model='auto', data_dir=args.data_dir)
+        model = ClassifierForResNet(predictor)
     elif args.net == 'ResNet152':
-        predictor = ResNet152Layers(pretrained_model=None, data_dir=args.data_dir)
-        model = L.Classifier(predictor)
+        predictor = ResNet152Layers(pretrained_model='auto', data_dir=args.data_dir)
+        model = ClassifierForResNet(predictor)
         #model = ResNet152Layers()
     else:
         print('Such network is not defined')

@@ -48,32 +48,30 @@ class ResNet50Layers(link.Chain):
             res3=BuildingBlock(4, 256, 128, 512, 2, **kwargs),
             res4=BuildingBlock(6, 512, 256, 1024, 2, **kwargs),
             res5=BuildingBlock(3, 1024, 512, 2048, 2, **kwargs),
-            #fc6=Linear(2048, 1000),
-            fc6=Linear(2048, 25),
+            fc6=Linear(2048, 1000),
+            #fc6=Linear(2048, 25),
             #fc7=Linear(1000, 25),
         )
         if pretrained_model == 'auto':
-            file_path = download_model(data_dir, 'resnet50') # download caffemodel
-            print(file_path)
+            download_model(data_dir, 'resnet50') # download caffemodel
             #_retrieve('ResNet-152-model.npz', 'ResNet-152-model.caffemodel', self)
-            _retrieve('ResNet-50-model.npz', file_path, self)
+            _retrieve('ResNet-50-model.npz', 'ResNet-50-model.caffemodel', data_dir, self)
             print('retrieve completed')
         elif pretrained_model:
             npz.load_npz(pretrained_model, self)
             print('pretrained model loaded')
-        #print(self.fc6._params)
-        #del(self.fc6._params[0])
-        ##del(self.fc6._params[0])
-        #print(self.fc6._params)
-        #print(self.fc6.__dict__)
-        #del(self.fc6.__dict__['W'])
-        ##del(self.fc6.__dict__['b'])
-        #print(self.fc6.__dict__)
-        #print('----')
-        #self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
-        #self.fc6.out_size=25
-        #print(self.fc6._params)
-        #print(self.fc6.__dict__)
+
+        # ======= re-initialize fc6 layer (need more sophisticated methods) ======
+        del(self.fc6._params[0])
+        del(self.fc6._params[0])
+        del(self.fc6.__dict__['W'])
+        del(self.fc6.__dict__['b'])
+        self.fc6.out_size=25
+        self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
+        #self.fc6.add_param('b', 25, initializer=HeNormal())
+        self.fc6.add_param('b', 25)
+        # ===========================================================================
+
         self.functions = OrderedDict([
             ('conv1', [self.conv1, self.bn1, relu]),
             ('pool1', [lambda x: max_pooling_2d(x, ksize=3, stride=2)]),
@@ -135,8 +133,8 @@ class ResNet50Layers(link.Chain):
             if key in target_layers:
                 activations[key] = h
                 target_layers.remove(key)
-        return activations['fc6']
-        #return activations
+        #return activations['fc6']
+        return activations
 
     def extract(self, images, layers=['pool5'], size=(224, 224),
                 test=True, volatile=flag.OFF):
@@ -411,10 +409,13 @@ def _make_npz(path_npz, path_caffemodel, model):
     return model
 
 
-def _retrieve(name_npz, name_caffemodel, model):
-    root = download.get_dataset_directory('pfnet/chainer/models/')
-    path = os.path.join(root, name_npz)
-    path_caffemodel = os.path.join(root, name_caffemodel)
+def _retrieve(name_npz, name_caffemodel, data_dir, model):
+    #root = download.get_dataset_directory('pfnet/chainer/models/')
+    #print(root.__class__)
+    #print(root) # /Users/miz/.chainer/dataset/pfnet/chainer/models/
+    #filepath # data/ResNet-50-model.caffemodel
+    path = os.path.join(data_dir, name_npz)
+    path_caffemodel = os.path.join(data_dir, name_caffemodel)
     return download.cache_or_load_file(
         path, lambda path: _make_npz(path, path_caffemodel, model),
         lambda path: npz.load_npz(path, model))
