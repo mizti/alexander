@@ -48,8 +48,8 @@ class ResNet50Layers(link.Chain):
             res3=BuildingBlock(4, 256, 128, 512, 2, **kwargs),
             res4=BuildingBlock(6, 512, 256, 1024, 2, **kwargs),
             res5=BuildingBlock(3, 1024, 512, 2048, 2, **kwargs),
-            fc6=Linear(2048, 1000),
-            #fc6=Linear(2048, 25),
+            #fc6=Linear(2048, 1000),
+            fc6=Linear(2048, 25, initialW=normal.HeNormal(scale=1.0)),
             #fc7=Linear(1000, 25),
         )
         if pretrained_model == 'auto':
@@ -62,14 +62,15 @@ class ResNet50Layers(link.Chain):
             print('pretrained model loaded')
 
         # ======= re-initialize fc6 layer (need more sophisticated methods) ======
-        del(self.fc6._params[0])
-        del(self.fc6._params[0])
-        del(self.fc6.__dict__['W'])
-        del(self.fc6.__dict__['b'])
-        self.fc6.out_size=25
-        self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
-        #self.fc6.add_param('b', 25, initializer=HeNormal())
-        self.fc6.add_param('b', 25)
+        #print('reset fc6')
+        #del(self.fc6._params[0])
+        #del(self.fc6._params[0])
+        #del(self.fc6.__dict__['W'])
+        #del(self.fc6.__dict__['b'])
+        #self.fc6.out_size=25
+        #self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
+        ##self.fc6.add_param('b', 25, initializer=HeNormal())
+        #self.fc6.add_param('b', 25)
         # ===========================================================================
 
         self.functions = OrderedDict([
@@ -393,8 +394,8 @@ def _transfer_resnet50(src, dst):
     _transfer_block(src, dst.res4, ['4a', '4b', '4c', '4d', '4e', '4f'])
     _transfer_block(src, dst.res5, ['5a', '5b', '5c'])
 
-    dst.fc6.W.data[:] = src.fc1000.W.data
-    dst.fc6.b.data[:] = src.fc1000.b.data
+    #dst.fc6.W.data[:] = src.fc1000.W.data
+    #dst.fc6.b.data[:] = src.fc1000.b.data
 
 
 def _make_npz(path_npz, path_caffemodel, model):
