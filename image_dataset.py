@@ -68,7 +68,6 @@ class ImageDataset(chainer.dataset.DatasetMixin):
 
     def get_image(self, filename):
         image = Image.open(self._data_dir + '/' + filename)
-        print(filename)
 
         # make valiation of image
         i = random.randint(1,100000)
