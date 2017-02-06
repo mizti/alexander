@@ -72,13 +72,11 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         # make valiation of image
         i = random.randint(1,100000)
         if (i%2 == 0) and (self._test == False):
-            #print('do left-right mirror')
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
         if (i%100 != 0) and (self._crop):
-            #print('extract upto 70% region')
             if self._test == True:
-                w_mag = 70
-                h_mag = 70
+                w_mag = 80
+                h_mag = 80
                 left_percentage = 0.5
                 top_percentage = 0.5
             else:
