@@ -37,11 +37,11 @@ if __name__ == '__main__':
 
     if args.test_sample_start is not None and args.test_sample_end is not None: 
         print(test_samples)
-        train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=train_samples, data_dir=args.data_dir)
-        test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=test_samples,  data_dir=args.data_dir)
+        train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=train_samples, data_dir=args.data_dir, datasource='train', test=False)
+        test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=test_samples,  data_dir=args.data_dir, datasource='train', test=True)
     else:
-        train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, data_dir=args.data_dir)
-        test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=-1, data_dir=args.data_dir)
+        train_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, data_dir=args.data_dir, datasource='train', test=False)
+        test_data = ImageDataset(normalize=True, flatten=False, max_size=224,  dataselect=-1, data_dir=args.data_dir, datasource='train', test=True)
 
     #train_iter = iterators.SerialIterator(train_data, batch_size=100, repeat=True, shuffle=True)
     #test_iter = iterators.SerialIterator(test_data, batch_size=100, repeat=False, shuffle=True)

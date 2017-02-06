@@ -15,24 +15,24 @@ import glob
 import re
 
 # dataselect: can be designated with int or list.
-# mode: 'train' / 'trial'
 class ImageDataset(chainer.dataset.DatasetMixin):
-    def __init__(self, normalize=True, flatten=True, crop=True, max_size=200, dataselect = 0, data_dir='data', mode='train'):
+    def __init__(self, normalize=True, flatten=True, crop=True, max_size=200, dataselect = 0, data_dir='data', datasource='train', test=False):
         self._normalize = normalize
         self._flatten = flatten
         self._crop = crop
         self._max_size = max_size
         self._data_dir = data_dir
         self._dataselect = dataselect
-        self._mode = mode
+        self._datasource = datasource
+        self._test = test
         pairs = []
-        if self._mode == 'train':
+        if self._datasource == 'train':
             with open(self._data_dir + '/clf_train_master.tsv', newline='') as f:
                 tsv = csv.reader(f, delimiter='\t')
                 for index, row in enumerate(tsv):
                     if 'jpg' in row[0]:
                         pairs.append(row)
-        elif self._mode == 'trial':
+        elif self._datasource == 'trial':
             filelist = glob.glob('data/test*.jpg')
             files = [r.split('/')[-1] for r in glob.glob('data/test*.jpg')]
             sorted_files = sorted(files, key=lambda x: self.getnum_from_string(x))
@@ -71,7 +71,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
 
         # make valiation of image
         i = random.randint(1,100000)
-        if (i%2 == 0) and (self._mode == 'train'):
+        if (i%2 == 0) and (self._test == False):
             #print('do left-right mirror')
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
         if (i%100 != 0) and (self._crop):
@@ -114,7 +114,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         new_h = self._max_size
         image = image.resize((new_w, new_h), Image.BICUBIC)
 
-        if (i%20 == 0) and (self._mode == 'train'):
+        if (i%20 == 0) and (self._test == False):
             #print('blur')
             image = image.filter(ImageFilter.BLUR)
         #if i%5 == 0 and self._mode == 'train':
