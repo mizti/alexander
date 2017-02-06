@@ -78,7 +78,7 @@ if __name__ == '__main__':
     else:
         output_filename = args.output
 
-    trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=-1, datasource='trial', test=True)
+    trial_data = ImageDataset(normalize=True, flatten=False, crop=True, max_size=224, dataselect=-1, datasource='trial', test=True)
     #trial_data = ImageDataset(normalize=True, flatten=False, max_size=224, dataselect=list(range(8000,10000)), datasource='trial', test=True)
 
     model = ''

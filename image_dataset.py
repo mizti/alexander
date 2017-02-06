@@ -76,10 +76,16 @@ class ImageDataset(chainer.dataset.DatasetMixin):
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
         if (i%100 != 0) and (self._crop):
             #print('extract upto 70% region')
-            w_mag = random.randint(70, 100)
-            h_mag = random.randint(70, 100)
-            left_percentage = random.random()
-            top_percentage = random.random()
+            if self._test == True:
+                w_mag = 70
+                h_mag = 70
+                left_percentage = 0.5
+                top_percentage = 0.5
+            else:
+                w_mag = random.randint(70, 100)
+                h_mag = random.randint(70, 100)
+                left_percentage = random.random()
+                top_percentage = random.random()
 
             width = image.size[0]
             height = image.size[1]

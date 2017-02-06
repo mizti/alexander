@@ -50,7 +50,6 @@ class ResNet50Layers(link.Chain):
             res5=BuildingBlock(3, 1024, 512, 2048, 2, **kwargs),
             #fc6=Linear(2048, 1000),
             fc6=Linear(2048, 25, initialW=normal.HeNormal(scale=1.0)),
-            #fc7=Linear(1000, 25),
         )
         if pretrained_model == 'auto':
             download_model(data_dir, 'resnet50') # download caffemodel
@@ -61,18 +60,6 @@ class ResNet50Layers(link.Chain):
             npz.load_npz(pretrained_model, self)
             print('pretrained model loaded')
 
-        # ======= re-initialize fc6 layer (need more sophisticated methods) ======
-        #print('reset fc6')
-        #del(self.fc6._params[0])
-        #del(self.fc6._params[0])
-        #del(self.fc6.__dict__['W'])
-        #del(self.fc6.__dict__['b'])
-        #self.fc6.out_size=25
-        #self.fc6.add_param('W', (25, 2048),initializer=HeNormal())
-        ##self.fc6.add_param('b', 25, initializer=HeNormal())
-        #self.fc6.add_param('b', 25)
-        # ===========================================================================
-
         self.functions = OrderedDict([
             ('conv1', [self.conv1, self.bn1, relu]),
             ('pool1', [lambda x: max_pooling_2d(x, ksize=3, stride=2)]),
@@ -82,7 +69,6 @@ class ResNet50Layers(link.Chain):
             ('res5', [self.res5]),
             ('pool5', [_global_average_pooling_2d]),
             ('fc6', [self.fc6]),
-            #('fc7', [self.fc7]),
             #('prob', [softmax]),
         ])
 
