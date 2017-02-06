@@ -68,6 +68,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
 
     def get_image(self, filename):
         image = Image.open(self._data_dir + '/' + filename)
+        print(filename)
 
         # make valiation of image
         i = random.randint(1,100000)
@@ -128,16 +129,12 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         #    image = image.filter(ImageFilter.BLUR)
         #if i%10 == 0 and self._mode == 'train':
         #    print('add gausian noise')
-        
+
         #image.save('sampledata.png')
 
-        image_array = np.asarray(image)
+        # w / h / c
+        image_array = np.asarray(image).astype('float32')
         return image_array
-        
-        # type cast
-        image_array = image_array.astype('float32')
-        label = np.int32(label)
-        return image_array, label
 
     def get_filename(self, i):
         return self._pairs[i][0]
@@ -153,6 +150,6 @@ class ImageDataset(chainer.dataset.DatasetMixin):
             if image_array.ndim == 2:
                 mage_array = image_array[np.newaxis,:]
         image_array = image_array.astype('float32')
-        image_array = image_array.transpose(2, 0, 1) # order of rgb / h / w
+        image_array = image_array.transpose(2, 1, 0) # order of rgb / h / w
         label = np.int32(self._pairs[i][1])
         return image_array, label
