@@ -10,17 +10,11 @@ file_names = [
 ]
 
 data_names = [
-    #'main/accuracy',
+    'main/accuracy',
     'validation/main/accuracy',
     #'main/loss',
     "main/loss",
-    "main/loss1",
-    "main/loss2",
-    "main/loss3",
     "validation/main/loss",
-    "validation/main/loss1",
-    "validation/main/loss2",
-    "validation/main/loss3"
 ]
 
 data = {}
