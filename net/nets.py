@@ -165,7 +165,7 @@ from chainer.functions.evaluation import accuracy
 from chainer.functions.loss import softmax_cross_entropy
 from chainer import link
 from chainer import reporter
-
+from chainer.functions.activation.softmax import softmax
 
 class ClassifierForResNet(link.Chain):
 
@@ -234,3 +234,8 @@ class ClassifierForResNet(link.Chain):
             self.accuracy = self.accfun(self.y, t)
             reporter.report({'accuracy': self.accuracy}, self)
         return self.loss
+
+    def predict(self, x):
+        print(x.__class__)
+        print(x.shape)
+        return softmax(self.predictor(x)['fc6']).data

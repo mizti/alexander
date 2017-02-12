@@ -68,6 +68,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', '-g', type=int, default=-1, help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--model_snapshot', '-m', default=None, help='Filename of model snapshot')
+    parser.add_argument('--data_dir', '-d', default='data', help='directory of pretrain models and image data')
     parser.add_argument('--net', '-n', default='GoogLeNet', help='Choose network to use for prediction')
     parser.add_argument('--iteration', '-t', type=int, default=1, help='Sampling iteration for each test data')
     parser.add_argument('--output', '-o', default='default', help='Sampling iteration for each test data')
@@ -86,6 +87,9 @@ if __name__ == '__main__':
         model = CNN()
     elif args.net == 'GoogLeNet':
         model = GoogLeNetBN()
+    elif args.net == 'ResNet50':
+        predictor = ResNet50Layers(pretrained_model=None, data_dir=args.data_dir)
+        model = ClassifierForResNet(predictor)
     else:
         print('please select CNN or GoogLeNet')
 
@@ -97,8 +101,6 @@ if __name__ == '__main__':
         if args.gpu >= 0:
             chainer.cuda.get_device(args.gpu).use()  # Make a specified GPU current
             model.to_gpu()  # Copy the model to the GPU
-        #ans_from_model = predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu)
-        #ans.append(predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu))
         ans_candidates.append(predict(model, trial_data, predict_iteration=args.iteration, minibatch_size=50, device=args.gpu))
 
     ans_candidates = np.array(ans_candidates)
