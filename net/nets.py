@@ -236,6 +236,4 @@ class ClassifierForResNet(link.Chain):
         return self.loss
 
     def predict(self, x):
-        print(x.__class__)
-        print(x.shape)
         return softmax(self.predictor(x)['fc6']).data
