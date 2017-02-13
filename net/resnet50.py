@@ -31,9 +31,12 @@ from chainer.utils import imgproc
 from chainer.variable import Variable
 from utils.tools import *
 import numpy as np
+import chainer.functions as F
 
 class ResNet50Layers(link.Chain):
-    def __init__(self, pretrained_model='auto', data_dir='data'):
+    def __init__(self, pretrained_model='auto', data_dir='data', drop_ratio=0):
+        self._drop_ratio = drop_ratio
+
         if pretrained_model:
             # As a sampling process is time-consuming,
             # we employ a zero initializer for faster computation.
@@ -51,6 +54,7 @@ class ResNet50Layers(link.Chain):
             #fc6=Linear(2048, 1000),
             fc6=Linear(2048, 25, initialW=normal.HeNormal(scale=1.0)),
         )
+
         if pretrained_model == 'auto':
             download_model(data_dir, 'resnet50') # download caffemodel
             #_retrieve('ResNet-152-model.npz', 'ResNet-152-model.caffemodel', self)
@@ -68,6 +72,7 @@ class ResNet50Layers(link.Chain):
             ('res4', [self.res4]),
             ('res5', [self.res5]),
             ('pool5', [_global_average_pooling_2d]),
+            ('dropout', ['drop']),
             ('fc6', [self.fc6]),
             #('prob', [softmax]),
         ])
@@ -115,6 +120,9 @@ class ResNet50Layers(link.Chain):
                 if isinstance(func, BatchNormalization) or \
                         isinstance(func, BuildingBlock):
                     h = func(h, test=test)
+                elif isinstance(func, str) and func=='drop':
+                    #h = func(h, test)
+                    h = F.dropout(h, ratio=self._drop_ratio ,train = not test)
                 else:
                     h = func(h)
             if key in target_layers:

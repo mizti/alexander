@@ -26,6 +26,7 @@ if __name__ == '__main__':
                                 help='Interval of model snapshot')
     parser.add_argument('--trainer_snapshot_interval', '-t', type=int, default=0,
                                 help='Interval of trainer snapshot')
+    parser.add_argument('--drop_ratio', '-p', type=float, default=0, help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='', help='Resume the training from snapshot')
     parser.add_argument('--test_sample_start', '-s', default=None, type=int, help='Resume the training from snapshot')
     parser.add_argument('--test_sample_end', '-d', default=None, type=int, help='Resume the training from snapshot')
@@ -56,7 +57,7 @@ if __name__ == '__main__':
     elif args.net == 'GoogLeNet':
         model = GoogLeNetBN()
     elif args.net == 'ResNet50':
-        predictor = ResNet50Layers(pretrained_model='auto', data_dir=args.data_dir)
+        predictor = ResNet50Layers(pretrained_model='auto', data_dir=args.data_dir, drop_ratio = args.drop_ratio)
         model = ClassifierForResNet(predictor)
     elif args.net == 'ResNet152':
         predictor = ResNet152Layers(pretrained_model='auto', data_dir=args.data_dir)
