@@ -75,8 +75,10 @@ class ImageDataset(chainer.dataset.DatasetMixin):
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
         if (i%100 != 0) and (self._crop):
             if self._test == True:
-                w_mag = 80
-                h_mag = 80
+                #w_mag = 80 
+                #h_mag = 80
+                w_mag = 100
+                h_mag = 100
                 left_percentage = 0.5
                 top_percentage = 0.5
             else:
