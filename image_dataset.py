@@ -13,6 +13,7 @@ import chainer
 from chainer import datasets
 import glob
 import re
+import math
 
 # dataselect: can be designated with int or list.
 class ImageDataset(chainer.dataset.DatasetMixin):
@@ -66,14 +67,34 @@ class ImageDataset(chainer.dataset.DatasetMixin):
     def __len__(self):
         return len(self._pairs)
 
+    def rotate(self, img, angle):
+        width = img.size[0]
+        height = img.size[1]
+        tmp_size = int(width * 1)
+        tmp = Image.new('RGB', (tmp_size, tmp_size), (255, 0, 0) )
+        posx = int((tmp_size - width) / 2)
+        posy = int((tmp_size - height) / 2)
+        tmp.paste(img, (posx, posy))
+        tmp = tmp.rotate(angle)
+        cuts = int(math.floor((width + height) / math.sqrt(2)))
+        pos = int((tmp_size - cuts) / 2)
+        tmp = tmp.crop( (pos, pos, pos + cuts, pos + cuts) )
+        tmp.save('temp/rotate.png')
+        return tmp
+
     def get_image(self, filename):
         image = Image.open(self._data_dir + '/' + filename)
 
-        # make valiation of image
+        # randomize seed
         i = random.randint(1,100000)
+
         if (i%2 == 0) and (self._test == False):
             image = image.transpose(Image.FLIP_LEFT_RIGHT)
-        if (i%100 != 0) and (self._crop):
+
+        if (i%3 == 0) and (self._test == False):
+            image = self.rotate(image, random.randint(-30, 30))
+
+        if (i%6 != 0) and (self._crop):
             if self._test == True:
                 #w_mag = 80 
                 #h_mag = 80
@@ -82,8 +103,16 @@ class ImageDataset(chainer.dataset.DatasetMixin):
                 left_percentage = 0.5
                 top_percentage = 0.5
             else:
-                w_mag = random.randint(70, 100)
-                h_mag = random.randint(70, 100)
+                #w_mag = random.randint(70, 100)
+                #h_mag = random.randint(70, 100)
+                w_mag = 0.0
+                h_mag = 1000.0
+                while True:
+                    w_mag = random.randint(20, 100)
+                    h_mag = random.randint(20, 100)
+                    if w_mag / h_mag < 1.33 and w_mag / h_mag > 0.75:
+                        break
+
                 left_percentage = random.random()
                 top_percentage = random.random()
 
@@ -123,13 +152,8 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         if (i%20 == 0) and (self._test == False):
             #print('blur')
             image = image.filter(ImageFilter.BLUR)
-        #if i%5 == 0 and self._mode == 'train':
-        #    #print('add inpulse noise')
-        #    image = image.filter(ImageFilter.BLUR)
-        #if i%10 == 0 and self._mode == 'train':
-        #    print('add gausian noise')
 
-        #image.save('sampledata.png')
+        image.save('temp/sampledata.png')
 
         # w / h / c
         image_array = np.asarray(image).astype('float32')

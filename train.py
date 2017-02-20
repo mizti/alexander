@@ -37,7 +37,6 @@ if __name__ == '__main__':
         train_samples = list(set(all_samples) - set(test_samples))
 
     if args.test_sample_start is not None and args.test_sample_end is not None: 
-        print(test_samples)
         train_data = ImageDataset(normalize=True, flatten=False, crop=True, max_size=224, dataselect=train_samples, data_dir=args.data_dir, datasource='train', test=False)
         test_data = ImageDataset(normalize=True, flatten=False, crop=True, max_size=224,  dataselect=test_samples,  data_dir=args.data_dir, datasource='train', test=True)
     else:
