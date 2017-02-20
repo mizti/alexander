@@ -79,7 +79,6 @@ class ImageDataset(chainer.dataset.DatasetMixin):
         cuts = int(math.floor((width + height) / math.sqrt(2)))
         pos = int((tmp_size - cuts) / 2)
         tmp = tmp.crop( (pos, pos, pos + cuts, pos + cuts) )
-        tmp.save('temp/rotate.png')
         return tmp
 
     def get_image(self, filename):
