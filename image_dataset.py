@@ -152,7 +152,7 @@ class ImageDataset(chainer.dataset.DatasetMixin):
             #print('blur')
             image = image.filter(ImageFilter.BLUR)
 
-        image.save('temp/sampledata.png')
+        #image.save('temp/sampledata.png')
 
         # w / h / c
         image_array = np.asarray(image).astype('float32')
